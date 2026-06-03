@@ -10,6 +10,7 @@ export const sections = [
     watermark: 'INTRO',
     layout: 'balanced',
     moonPhase: 'new',
+    moonOrbit: 'center',
     tags: ['蓝黑白主调', '舞台菜单', '原创徽章', '丝滑转场'],
   },
   {
@@ -23,6 +24,7 @@ export const sections = [
     watermark: 'PROFILE',
     layout: 'forward',
     moonPhase: 'crescent',
+    moonOrbit: 'upper',
     tags: ['作者 tiaotiao', '河北工业大学', '游戏 UI', '交互实验'],
   },
   {
@@ -36,6 +38,7 @@ export const sections = [
     watermark: 'WORKS',
     layout: 'archive',
     moonPhase: 'half',
+    moonOrbit: 'wide',
     cards: [
       {
         meta: 'WEB / PORTFOLIO',
@@ -60,6 +63,7 @@ export const sections = [
     watermark: 'PLAYGROUND',
     layout: 'arcade',
     moonPhase: 'gibbous',
+    moonOrbit: 'high',
     cards: [
       {
         meta: 'MINI GAME / FEATURED',
@@ -91,6 +95,7 @@ export const sections = [
     watermark: 'CONTACT',
     layout: 'terminal',
     moonPhase: 'full',
+    moonOrbit: 'low',
     tags: ['Email', 'GitHub', 'Bilibili', 'Social'],
   },
 ];

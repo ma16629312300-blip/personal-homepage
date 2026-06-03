@@ -15,8 +15,10 @@ describe('Stage menu redesign', () => {
     expect(screen.getByRole('heading', { name: /首页/i })).toBeInTheDocument();
     expect(screen.getByText(/PERSONAL STAGE/i)).toBeInTheDocument();
     expect(screen.getByText(/个人主页的动态入口/i)).toBeInTheDocument();
+    expect(document.querySelector('.stage-shell')).toHaveAttribute('data-visual-system', 'lunar');
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-section', 'intro');
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'new');
+    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'center');
     expect(screen.getByRole('button', { name: /首页 INTRO/i })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -47,6 +49,7 @@ describe('Stage menu redesign', () => {
     );
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-section', 'playground');
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'gibbous');
+    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'high');
     expect(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('transition-wipe')).toHaveAttribute('data-active', 'true');
   });

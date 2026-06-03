@@ -1,6 +1,12 @@
 export default function CharacterStage({ section }) {
   return (
-    <aside className="emblem-stage" aria-label="stage emblem" data-section={section.id} data-phase={section.moonPhase}>
+    <aside
+      className="emblem-stage"
+      aria-label="stage emblem"
+      data-section={section.id}
+      data-phase={section.moonPhase}
+      data-orbit={section.moonOrbit}
+    >
       <div className="emblem-beams" aria-hidden="true">
         <span />
         <span />
