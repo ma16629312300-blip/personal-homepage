@@ -58,7 +58,7 @@ describe('Stage menu experience', () => {
     );
     expect(screen.getByRole('link', { name: /下载记忆树/i })).toHaveAttribute(
       'href',
-      '/downloads/memory_tree_v3_7_theme_switchable.html'
+      `${import.meta.env.BASE_URL}downloads/memory_tree_v3_7_theme_switchable.html`
     );
     expect(screen.getByRole('link', { name: /下载记忆树/i })).toHaveAttribute(
       'download',
