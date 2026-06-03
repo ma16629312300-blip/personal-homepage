@@ -1,6 +1,11 @@
 export default function StageContent({ section }) {
   return (
     <section className="stage-content" aria-live="polite" key={section.id}>
+      {section.parentId && (
+        <a className="detail-back" href={`#${section.parentId}`}>
+          返回有趣功能
+        </a>
+      )}
       <p className="content-supertitle">{section.supertitle}</p>
       <h1>{section.title}</h1>
       <p className="content-label">{section.label}</p>
@@ -22,6 +27,11 @@ export default function StageContent({ section }) {
               <p>{card.meta}</p>
               <h2>{card.title}</h2>
               <span>{card.text}</span>
+              {card.internalHref && (
+                <a className="stage-card__link" href={card.internalHref}>
+                  {card.action ?? '查看详情'}
+                </a>
+              )}
               {card.href && (
                 <a className="stage-card__link" href={card.href} target="_blank" rel="noreferrer">
                   {card.action ?? '打开项目'}
@@ -29,6 +39,28 @@ export default function StageContent({ section }) {
               )}
             </article>
           ))}
+        </div>
+      )}
+
+      {section.links?.length > 0 && (
+        <div className="detail-actions" aria-label="项目链接">
+          {section.links.map((link) =>
+            link.href ? (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.download ? undefined : '_blank'}
+                rel={link.download ? undefined : 'noreferrer'}
+                download={link.download}
+              >
+                {link.label}
+              </a>
+            ) : (
+              <span key={link.label} className="detail-actions__pending" aria-disabled="true">
+                {link.label}
+              </span>
+            )
+          )}
         </div>
       )}
     </section>

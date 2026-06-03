@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Memory Tree - v3.7 Theme Switchable</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; overflow: hidden; background: #000; font-family: 'Playfair Display', serif; touch-action: none; }
+    #canvas-container { width: 100vw; height: 100vh; position: fixed; inset: 0; z-index: 1; }
+    #loader { position: fixed; inset: 0; background: radial-gradient(circle at center, #08090d, #000 70%); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s ease; }
+    .spinner { width: 62px; height: 62px; border: 1px solid rgba(191,164,95,.22); border-top: 2px solid #d4af37; border-radius: 50%; animation: spin 1s linear infinite; box-shadow: 0 0 26px rgba(191,164,95,.25); }
+    .loader-text { color: #bfa45f; font-size: 13px; letter-spacing: 5px; margin-top: 24px; font-family: 'Cinzel', serif; animation: pulse 2.5s infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:.48} 50%{opacity:1} }
+    #ui-layer { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 48px 20px 34px; transition: opacity .55s ease, transform .55s ease; }
+    .ui-hidden { opacity: 0 !important; transform: translateY(-10px); pointer-events: none !important; }
+    h1 { margin: 0; text-align: center; font-family: 'Cinzel', serif; font-weight: 400; font-size: clamp(38px, 6vw, 78px); letter-spacing: 8px; line-height: 1; background: linear-gradient(135deg,#fff 18%,#e0c886 50%,#8e7132 82%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 30px rgba(224,200,134,.5)); animation: fadeDown 1.1s ease .25s both; }
+    .subtitle { text-align: center; margin-top: 14px; color: rgba(255,255,255,.44); font-size: 11px; letter-spacing: 5px; text-transform: uppercase; animation: fadeIn 1.2s ease .6s both; }
+    .meta-line { text-align: center; margin-top: 8px; color: rgba(255,255,255,.55); font-size: 10px; letter-spacing: 2.5px; font-family: "Cinzel", serif; animation: fadeIn 1.2s ease .72s both; }
+    .controls-area { pointer-events: auto; display: grid; gap: 14px; justify-items: center; animation: fadeUp 1.2s ease .9s both; }
+    .glass-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .glass-btn, .mode-btn, #ui-toggle { border: 1px solid rgba(191,164,95,.42); background: rgba(15,18,24,.62); color: #d4af37; backdrop-filter: blur(14px); box-shadow: 0 10px 30px rgba(0,0,0,.45); font-family: 'Cinzel', serif; cursor: pointer; transition: transform .28s ease, border-color .28s ease, background .28s ease, color .28s ease, box-shadow .28s ease; }
+    .glass-btn { padding: 13px 36px; letter-spacing: 3px; text-transform: uppercase; font-size: 11px; }
+    .mode-btn { padding: 9px 14px; font-size: 10px; letter-spacing: 2px; border-radius: 999px; }
+    .theme-select { min-width: 132px; border-radius: 999px; padding: 9px 12px; outline: none; appearance: none; text-align: center; }
+    .theme-select option { background:#10131c; color:#f4df9c; }
+    .glass-btn:hover, .mode-btn:hover, #ui-toggle:hover { transform: translateY(-2px); color: #fff; border-color: rgba(255,255,255,.85); background: rgba(191,164,95,.14); box-shadow: 0 0 38px rgba(191,164,95,.32); }
+    .mode-btn.active { color: #fff; border-color: #f2dc92; background: rgba(191,164,95,.18); }
+    #file-input { display: none; }
+    #ui-toggle { position: fixed; top: 16px; right: 16px; z-index: 40; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; line-height: 42px; text-align: center; pointer-events: auto; }
+    #quality-badge { position: fixed; left: 16px; bottom: 16px; z-index: 20; color: rgba(255,255,255,.36); font-size: 10px; letter-spacing: 2px; font-family: 'Cinzel', serif; pointer-events: none; }
+    #webcam-hint { position: fixed; right: 26px; bottom: 26px; z-index: 22; width: 140px; height: 105px; border: 1px solid rgba(255,255,255,.15); opacity: 0; transition: opacity .5s; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 0 20px rgba(0,0,0,.5); }
+    #webcam-canvas { width: 100%; height: 100%; opacity: .72; filter: sepia(.2) contrast(1.1); }
+    .gesture-status { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; background: rgba(0,0,0,.78); color: #bfa45f; font: 10px 'Cinzel', serif; padding: 6px 0; letter-spacing: 2px; }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @media (max-width: 768px) {
+      #ui-layer { padding: 28px 10px 22px; }
+      h1 { font-size: clamp(30px, 12vw, 48px); letter-spacing: 4px; }
+      .subtitle { font-size: 9px; letter-spacing: 3px; margin-top: 10px; }
+      .glass-btn { padding: 12px 24px; font-size: 10px; letter-spacing: 2px; }
+      #webcam-hint { width: 104px; height: 78px; right: 12px; bottom: 12px; }
+      #quality-badge { display: none; }
+      .mode-btn { padding: 8px 11px; }
+    }
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/","@mediapipe/tasks-vision":"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm"}}
+  </script>
+</head>
+<body>
+  <button id="ui-toggle" aria-label="Toggle UI">☰</button>
+  <div id="loader"><div class="spinner"></div><div class="loader-text">Growing Memory Garden</div></div>
+  <div id="canvas-container"></div>
+  <div id="quality-badge">AUTO QUALITY · MEMORY TREE · tiaotiao · v3.7</div>
+  <div id="ui-layer">
+    <header><h1>MEMORY TREE</h1><div class="subtitle">Floating Memory Garden</div><div class="meta-line">Author tiaotiao · Iteration v3.7</div></header>
+    <div class="controls-area">
+      <label class="glass-btn">Add Memories<input type="file" id="file-input" multiple accept="image/*"></label>
+      <div class="glass-row" aria-label="Scene modes">
+        <button class="mode-btn active" data-mode="TREE">Grow</button>
+        <button class="mode-btn" data-mode="SCATTER">Drift</button>
+        <button class="mode-btn" data-mode="FOCUS">Pick One</button>
+        <button class="mode-btn" data-mode="SHOW_ALL">All Memories</button>
+        <button class="mode-btn" data-action="NEXT_PHOTO">Next Memory</button>
+        <select class="mode-btn theme-select" id="theme-select" aria-label="主题配色"><option value="fresh">清新蓝金</option><option value="dream">梦幻紫金</option><option value="autumn">暖色秋日</option><option value="cyber">赛博霓虹</option></select>
+        <button class="mode-btn" data-action="START_CAMERA">Start Camera</button>
+        <button class="mode-btn" data-action="RESET_PHOTOS">Reset Photos</button>
+      </div>
+      <div style="font-size:9px;color:rgba(255,255,255,.32);letter-spacing:2px;text-align:center">[H] 隐藏 · [1树/2散/3抽/4全] · 握拳聚合 · 张开分散 · 捏合抽取 · 双手张开展示全部 · 可切换主题</div>
+    </div>
+  </div>
+  <div id="webcam-hint"><video id="webcam" autoplay playsinline muted style="display:none"></video><canvas id="webcam-canvas" width="300" height="150"></canvas><div class="gesture-status" id="gesture-text">Initialize AI...</div></div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+
+    const DEVICE = {
+      isMobile: matchMedia('(max-width: 768px), (pointer: coarse)').matches,
+      reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      dpr: Math.min(window.devicePixelRatio || 1, matchMedia('(max-width: 768px)').matches ? 1.25 : 1.65)
+    };
+    const CONFIG = {
+      counts: DEVICE.isMobile ? { ornaments: 360, diamonds: 260, gifts: 42, snowflakes: 1200, ribbon: 900, halo: 320 } : { ornaments: 720, diamonds: 560, gifts: 96, snowflakes: 2400, ribbon: 2000, halo: 820 },
+      tree: { height: 28, radius: 10 },
+      maxPhotos: DEVICE.isMobile ? 18 : 32
+    };
+    if (DEVICE.reducedMotion) { CONFIG.counts.snowflakes = Math.floor(CONFIG.counts.snowflakes * .45); CONFIG.counts.ribbon = Math.floor(CONFIG.counts.ribbon * .55); }
+
+    const STATE = {
+      mode: 'TREE',
+      focusTarget: null,
+      focusIndex: 0,
+      hand: { detected:false, x:0, y:0, palmX:0, lastPalmX:0, flickStartX:null, flickStartY:null, flickStartT:0, flickArmed:false, pinchHeld:false },
+      rotation:{x:0,y:0},
+      targetRotation:{x:0,y:0},
+      time:0,
+      snowSpeedMultiplier:1,
+      fps:60,
+      qualityStep:0
+    };
+    const GESTURE_SYSTEM = {
+      buffer: [],
+      bufferSize: 6,
+      currentStableGesture: 'NONE',
+      lastFire: 0,
+      cooldown: 620,
+      update(g) {
+        const now = performance.now();
+        // 拨动是瞬时动作，不走稳定帧投票，否则很容易被缓冲吞掉。
+        if ((g === 'FLICK_NEXT' || g === 'FLICK_PREV' || g === 'PINCH') && now - this.lastFire > this.cooldown) {
+          this.buffer.length = 0;
+          this.currentStableGesture = 'NONE';
+          this.lastFire = now;
+          return g;
+        }
+        this.buffer.push(g);
+        if (this.buffer.length > this.bufferSize) this.buffer.shift();
+        const counts = {};
+        for (const x of this.buffer) counts[x] = (counts[x] || 0) + 1;
+        let consensus = 'NONE';
+        let best = 0;
+        for (const [key, val] of Object.entries(counts)) {
+          if (val > best) { best = val; consensus = key; }
+        }
+        if (best < 4) return null;
+        if (consensus === 'NONE') {
+          this.currentStableGesture = 'NONE';
+          return null;
+        }
+        if (consensus !== this.currentStableGesture && now - this.lastFire > this.cooldown) {
+          this.currentStableGesture = consensus;
+          this.lastFire = now;
+          return consensus;
+        }
+        return null;
+      },
+      reset() {
+        this.buffer.length = 0;
+        this.currentStableGesture = 'NONE';
+      }
+    };
+
+    let scene, camera, renderer, composer, bloomPass, mainGroup, nebulaMesh, snowSystem, handLandmarker, video, coreLight;
+    let mediaPipeRunning = false;
+    const clock = new THREE.Clock();
+    const instanceBatches = [];
+    const photos = [];
+    const gifts = [];
+    let uploadedPhotoCount = 0;
+    const dummy = new THREE.Object3D();
+    const tempVec = new THREE.Vector3();
+    const tempQuat = new THREE.Quaternion();
+
+    const nebulaVertexShader = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
+    const nebulaFragmentShader = `uniform float time; varying vec2 vUv; float hash(vec2 p){return fract(1e4*sin(17.0*p.x+p.y*.1)*(.1+abs(sin(p.y*13.0+p.x))));} float noise(vec2 x){vec2 i=floor(x);vec2 f=fract(x);float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));vec2 u=f*f*(3.0-2.0*f);return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;} float fbm(vec2 x){float v=0.,a=.5;vec2 s=vec2(100);mat2 r=mat2(cos(.5),sin(.5),-sin(.5),cos(.5));for(int i=0;i<4;i++){v+=a*noise(x);x=r*x*2.0+s;a*=.5;}return v;} void main(){vec2 uv=vUv*2.0-1.0;float t=time*.02;float r=fbm(uv+vec2(t,0));float g=fbm(uv*1.5+vec2(0,t*1.1));float b=fbm(uv*2.0-vec2(t));vec3 col=mix(vec3(0,0,.02),vec3(.05,.02,.1),r);col=mix(col,vec3(0,.1,.2),g*.4);col+=vec3(.5,.4,.1)*pow(b*r,4.0)*.5;float vig=1.0-length(uv*.6);col*=smoothstep(0.0,1.2,vig);gl_FragColor=vec4(col,1);}`;
+    const snowVertexShader = `uniform float time; uniform float speedMultiplier; attribute float size; attribute vec3 velocity; varying float vOpacity; void main(){vec3 pos=position;pos.y=mod(pos.y-time*velocity.y*speedMultiplier+40.0,80.0)-40.0;float angle=time*velocity.x*speedMultiplier*.5;pos.x+=cos(angle)*2.0;pos.z+=sin(angle)*2.0;vec4 mv=modelViewMatrix*vec4(pos,1.0);gl_PointSize=size*(30.0/-mv.z);gl_Position=projectionMatrix*mv;vOpacity=smoothstep(0.0,10.0,-mv.z);}`;
+    const snowFragmentShader = `varying float vOpacity; void main(){vec2 c=gl_PointCoord*2.0-1.0;float d=length(c);if(d>1.0) discard;vec3 col=mix(vec3(1.0,.78,.36), vec3(.58,.82,1.0), gl_PointCoord.y); gl_FragColor=vec4(col,(1.0-d)*.68*vOpacity);}`;
+
+    const materials = {};
+    function makeMaterialLibrary(){
+      materials.gold = new THREE.MeshStandardMaterial({ color:0xd4af37, metalness:1, roughness:.2, envMapIntensity:3 });
+      materials.red = new THREE.MeshPhysicalMaterial({ color:0xd45d6e, metalness:.18, roughness:.5, sheen:1.35, sheenColor:0xffc7d0, clearcoat:.12 });
+      materials.green = new THREE.MeshPhysicalMaterial({ color:0x1b8d78, metalness:.18, roughness:.48, sheen:1.35, sheenColor:0x9cf0d4, clearcoat:.12 });
+      materials.orange = new THREE.MeshPhysicalMaterial({ color:0xc98a32, metalness:.22, roughness:.44, sheen:1.25, sheenColor:0xffe2a6, clearcoat:.14 });
+      materials.ice = new THREE.MeshPhysicalMaterial({ color:0xaaddff, metalness:.08, roughness:.12, transmission:.55, thickness:.8, ior:1.33, envMapIntensity:2 });
+      materials.diamond = new THREE.MeshPhysicalMaterial({ color:0xffffff, roughness:0, transmission:.8, thickness:1.6, ior:2.2, envMapIntensity:4.5, emissive:0xffffff, emissiveIntensity:.12 });
+      materials.ribbon = new THREE.MeshBasicMaterial({ color:0x8fd8ff, transparent:true, opacity:.58, side:THREE.DoubleSide, depthWrite:false, blending:THREE.AdditiveBlending });
+    }
+    function treePos(t, rBase=CONFIG.tree.radius, h=CONFIG.tree.height){ const y=t*h-h/2; const r=rBase*(1-t); const a=t*24*Math.PI; return new THREE.Vector3(Math.cos(a)*r,y,Math.sin(a)*r); }
+    function scatterPos(){ const u=Math.random(), v=Math.random(), th=2*Math.PI*u, ph=Math.acos(2*v-1), r=12+Math.random()*12; return new THREE.Vector3(r*Math.sin(ph)*Math.cos(th), r*Math.sin(ph)*Math.sin(th), r*Math.cos(ph)); }
+
+    class InstanceBatch {
+      constructor(name, geometry, material, capacity){
+        this.name = name;
+        this.mesh = new THREE.InstancedMesh(geometry, material, capacity);
+        this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        this.mesh.frustumCulled = false;
+        this.items = [];
+        mainGroup.add(this.mesh);
+        instanceBatches.push(this);
+      }
+      add(item){
+        item.current = item.posTree.clone();
+        item.currentScale = item.baseScale ?? 1;
+        item.rotation = item.rotation || new THREE.Euler(Math.random(), Math.random(), Math.random());
+        this.items.push(item);
+      }
+      update(dt){
+        const isScatter = STATE.mode === 'SCATTER';
+        const isFocus = STATE.mode === 'FOCUS' || STATE.mode === 'SHOW_ALL';
+        const camQuat = camera.quaternion;
+        const hideScale = isFocus ? .08 : 1;
+        for(let i=0; i<this.items.length; i++){
+          const p = this.items[i];
+          let target = p.posTree;
+          let targetScale = p.baseScale ?? 1;
+          if(isFocus){ target = p.posScatter; targetScale *= hideScale; }
+          else if(isScatter){ target = p.posScatter; }
+          else if(p.kind === 'HALO'){
+            p.angle += p.orbitSpeed * dt * .5;
+            tempVec.set(Math.cos(p.angle)*p.radius, p.y, Math.sin(p.angle)*p.radius).applyAxisAngle(p.axis, p.tilt);
+            target = tempVec;
+          } else if(p.kind === 'RIBBON'){
+            p.posTree.y = p.baseY + Math.sin(STATE.time*2 + p.phase) * .2;
+            target = p.posTree;
+          }
+          p.current.lerp(target, Math.min(1, 3.6*dt));
+          p.currentScale = THREE.MathUtils.lerp(p.currentScale, targetScale, Math.min(1, 3.0*dt));
+          if(isScatter && p.kind !== 'RIBBON' && p.kind !== 'HALO'){ p.rotation.x += p.spin.x*dt; p.rotation.y += p.spin.y*dt; }
+          else if(p.kind === 'DIAMOND'){ p.rotation.y += dt*.85; p.rotation.z += dt*.42; }
+          else if(p.kind === 'RIBBON'){ dummy.position.copy(p.current); dummy.lookAt(0, p.current.y, 0); dummy.updateMatrix(); this.mesh.setMatrixAt(i, dummy.matrix); continue; }
+          else if(p.kind === 'HALO'){ tempQuat.copy(camQuat); dummy.quaternion.copy(tempQuat); dummy.position.copy(p.current); dummy.scale.setScalar(p.currentScale); dummy.updateMatrix(); this.mesh.setMatrixAt(i, dummy.matrix); continue; }
+          dummy.position.copy(p.current); dummy.rotation.copy(p.rotation); dummy.scale.setScalar(p.currentScale); dummy.updateMatrix(); this.mesh.setMatrixAt(i, dummy.matrix);
+        }
+        this.mesh.count = this.items.length;
+        this.mesh.instanceMatrix.needsUpdate = true;
+      }
+    }
+
+    function initThree(){
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, .1, 300); camera.position.z = 60;
+      renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'high-performance' });
+      renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(DEVICE.dpr); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18;
+      container.appendChild(renderer.domElement);
+      mainGroup = new THREE.Group(); scene.add(mainGroup);
+      scene.add(new THREE.AmbientLight(0xffffff, .12));
+      coreLight = new THREE.PointLight(0x9fd7ff, 4.2, 52); coreLight.position.set(0,5,0); mainGroup.add(coreLight);
+      const goldSpot = new THREE.SpotLight(0xf0c979, 1500); goldSpot.position.set(30,40,30); goldSpot.angle=.6; scene.add(goldSpot);
+      const iceSpot = new THREE.SpotLight(0x9bdcff, 1100); iceSpot.position.set(-30,20,-30); scene.add(iceSpot);
+      const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment()).texture; pmrem.dispose();
+    }
+    function createBackground(){ const geo=new THREE.PlaneGeometry(300,180); const mat=new THREE.ShaderMaterial({vertexShader:nebulaVertexShader,fragmentShader:nebulaFragmentShader,uniforms:{time:{value:0}},depthWrite:false}); nebulaMesh=new THREE.Mesh(geo,mat); nebulaMesh.position.z=-80; scene.add(nebulaMesh); }
+    function createSnow(){
+      const geo=new THREE.BufferGeometry(), pos=[], vel=[], size=[];
+      for(let i=0;i<CONFIG.counts.snowflakes;i++){ pos.push((Math.random()-.5)*80,(Math.random()-.5)*80,(Math.random()-.5)*80); vel.push((Math.random()-.5),1+Math.random(),0); size.push(.2+Math.random()*.42); }
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3)); geo.setAttribute('velocity', new THREE.Float32BufferAttribute(vel,3)); geo.setAttribute('size', new THREE.Float32BufferAttribute(size,1));
+      const mat=new THREE.ShaderMaterial({uniforms:{time:{value:0},speedMultiplier:{value:1}},vertexShader:snowVertexShader,fragmentShader:snowFragmentShader,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+      snowSystem = new THREE.Points(geo, mat); scene.add(snowSystem);
+    }
+    function createContent(){
+      const sphereGeo = new THREE.SphereGeometry(.5, DEVICE.isMobile ? 12 : 16, DEVICE.isMobile ? 10 : 16);
+      const diamondGeo = new THREE.OctahedronGeometry(.35,0);
+      const planeGeo = new THREE.PlaneGeometry(.15,.15);
+      const batches = {
+        gold: new InstanceBatch('gold ornaments', sphereGeo, materials.gold, CONFIG.counts.ornaments),
+        red: new InstanceBatch('rose ornaments', sphereGeo, materials.red, CONFIG.counts.ornaments),
+        green: new InstanceBatch('teal ornaments', sphereGeo, materials.green, CONFIG.counts.ornaments),
+        orange: new InstanceBatch('amber ornaments', sphereGeo, materials.orange, CONFIG.counts.ornaments),
+        ice: new InstanceBatch('ice ornaments', sphereGeo, materials.ice, CONFIG.counts.ornaments),
+        diamond: new InstanceBatch('diamonds', diamondGeo, materials.diamond, CONFIG.counts.diamonds),
+        ribbon: new InstanceBatch('ribbon light', planeGeo, materials.ribbon, CONFIG.counts.ribbon),
+        halo: new InstanceBatch('celestial halos', planeGeo, materials.ribbon, CONFIG.counts.halo)
+      };
+      for(let i=0;i<CONFIG.counts.ornaments;i++){
+        const t=Math.random(); const pos=treePos(t).add(new THREE.Vector3((Math.random()-.5)*2.5,(Math.random()-.5)*1.5,(Math.random()-.5)*2.5)); const r=Math.random();
+        const batch = r<.22 ? batches.red : (r<.42 ? batches.green : (r<.6 ? batches.orange : (r<.8 ? batches.ice : batches.gold)));
+        batch.add({kind:'ORNAMENT', posTree:pos, posScatter:scatterPos(), baseScale:.3+Math.random()*.5, spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,0).multiplyScalar(1.5)});
+      }
+      for(let i=0;i<CONFIG.counts.diamonds;i++){ const t=Math.random(); const pos=treePos(t, CONFIG.tree.radius+1); batches.diamond.add({kind:'DIAMOND', posTree:pos, posScatter:scatterPos(), baseScale:1, spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,0).multiplyScalar(1.5)}); }
+      for(let i=0;i<CONFIG.counts.ribbon;i++){ const t=i/CONFIG.counts.ribbon; const y=t*CONFIG.tree.height-CONFIG.tree.height/2; const r=(CONFIG.tree.radius+1.2)*(1-t+.1); const a=t*30*Math.PI; const pos=new THREE.Vector3(Math.cos(a)*r,y,Math.sin(a)*r); batches.ribbon.add({kind:'RIBBON', posTree:pos, posScatter:scatterPos(), baseScale:1, baseY:y, phase:i*.05}); }
+      for(let i=0;i<CONFIG.counts.halo;i++){ const ring=i%3; const angle=Math.random()*Math.PI*2; const radius=14+ring*4; const y=(ring-1)*8; const axis=new THREE.Vector3(1,0,1).normalize(); const tilt=Math.PI*.1*(ring+1); const pos=new THREE.Vector3(Math.cos(angle)*radius,y,Math.sin(angle)*radius).applyAxisAngle(axis,tilt); batches.halo.add({kind:'HALO', posTree:pos, posScatter:scatterPos(), baseScale:1, angle, radius, y, axis, tilt, orbitSpeed:.5+Math.random()*.5}); }
+      createGifts();
+      const memorySeed=new THREE.Group();
+      const seed=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25,1), materials.diamond);
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(1.65,.035,8,96), materials.gold);
+      const ring2=ring.clone(); ring2.rotation.x=Math.PI/2;
+      memorySeed.add(seed, ring, ring2);
+      memorySeed.position.set(0,CONFIG.tree.height/2+1.35,0);
+      mainGroup.add(memorySeed);
+      const light=new THREE.PointLight(0xffdfad,2.1,22); light.position.copy(memorySeed.position); mainGroup.add(light);
+      createDefaultPhoto();
+    }
+    function createGifts(){
+      // Memory charms: small floating archive cards / light leaves, replacing Christmas gift boxes.
+      const cardGeo=new THREE.BoxGeometry(.72,.48,.045);
+      const lineGeoH=new THREE.BoxGeometry(.52,.035,.055);
+      const lineGeoV=new THREE.BoxGeometry(.035,.34,.055);
+      const beadGeo=new THREE.SphereGeometry(.055,10,8);
+      for(let i=0;i<CONFIG.counts.gifts;i++){
+        const t=Math.random();
+        const pos=treePos(t, CONFIG.tree.radius+1.35);
+        const group=new THREE.Group();
+        const cardMat = i%3===0 ? materials.ice : (i%3===1 ? materials.green : materials.orange);
+        const card=new THREE.Mesh(cardGeo, cardMat);
+        card.material.transparent = true;
+        card.material.opacity = .78;
+        const h1=new THREE.Mesh(lineGeoH, materials.gold); h1.position.y=.13; h1.position.z=.035;
+        const h2=new THREE.Mesh(lineGeoH, materials.gold); h2.position.y=-.13; h2.position.z=.035;
+        const v1=new THREE.Mesh(lineGeoV, materials.gold); v1.position.x=-.31; v1.position.z=.035;
+        const v2=new THREE.Mesh(lineGeoV, materials.gold); v2.position.x=.31; v2.position.z=.035;
+        const bead=new THREE.Mesh(beadGeo, materials.diamond); bead.position.set(.23,.13,.06);
+        group.add(card,h1,h2,v1,v2,bead);
+        group.position.copy(pos);
+        group.rotation.set((Math.random()-.5)*.6,Math.random()*Math.PI*2,(Math.random()-.5)*.5);
+        mainGroup.add(group);
+        gifts.push({mesh:group, posTree:pos.clone(), posScatter:scatterPos(), spin:new THREE.Vector3(Math.random()-.5,Math.random()-.5,0).multiplyScalar(.8), current:pos.clone(), scale:1});
+      }
+    }
+    function makePhotoFrame(width,height,texture){
+      const holder=new THREE.Group();
+      const mat=new THREE.MeshBasicMaterial({map:texture, side:THREE.DoubleSide}); holder.add(new THREE.Mesh(new THREE.PlaneGeometry(width,height), mat));
+      const border=.08, depth=.05; const top=new THREE.Mesh(new THREE.BoxGeometry(width+border*2,border,depth),materials.gold); const bottom=top.clone(); const left=new THREE.Mesh(new THREE.BoxGeometry(border,height+border*2,depth),materials.gold); const right=left.clone();
+      top.position.set(0,height/2+border/2,.03); bottom.position.set(0,-height/2-border/2,.03); left.position.set(-width/2-border/2,0,.03); right.position.set(width/2+border/2,0,.03); holder.add(top,bottom,left,right); return holder;
+    }
+    function addPhotoMesh(texture, isDefaultPhoto = false){
+      texture.colorSpace=THREE.SRGBColorSpace; texture.generateMipmaps=true; texture.minFilter=THREE.LinearMipmapLinearFilter; texture.magFilter=THREE.LinearFilter; texture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(), DEVICE.isMobile?2:8);
+      const aspect=texture.image ? texture.image.width/texture.image.height : .72; const height=2.0, width=height*aspect; const holder=makePhotoFrame(width,height,texture); mainGroup.add(holder);
+      const angle=Math.random()*Math.PI*2; const y=(Math.random()-.5)*CONFIG.tree.height*.5; const r=(CONFIG.tree.radius*.6)*(1-(y+CONFIG.tree.height/2)/CONFIG.tree.height)+2; const pos=new THREE.Vector3(Math.cos(angle)*r,y,Math.sin(angle)*r);
+      photos.push({mesh:holder,posTree:pos,posScatter:new THREE.Vector3((Math.random()-.5)*45,(Math.random()-.5)*30,10+Math.random()*20),current:pos.clone(),scale:.5,isDefault:isDefaultPhoto,texture});
+    }
+    function createDefaultPhoto(){
+      const c=document.createElement('canvas');
+      c.width=512; c.height=700;
+      const ctx=c.getContext('2d');
+      const bg=ctx.createLinearGradient(0,0,512,700);
+      bg.addColorStop(0,'#0b0c18'); bg.addColorStop(.45,'#0f1726'); bg.addColorStop(1,'#05060c');
+      ctx.fillStyle=bg; ctx.fillRect(0,0,512,700);
+      const grad=ctx.createLinearGradient(0,0,512,700);
+      grad.addColorStop(0,'#ffb6c8'); grad.addColorStop(.45,'#f2d38a'); grad.addColorStop(1,'#7ed7d2');
+      ctx.strokeStyle=grad; ctx.lineWidth=22; ctx.strokeRect(28,28,456,644);
+      ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=2; ctx.strokeRect(44,44,424,612);
+      for(let i=0;i<34;i++){
+        const x=Math.random()*512, y=Math.random()*700, r=1+Math.random()*3;
+        ctx.fillStyle=i%3===0?'rgba(255,182,200,.55)':(i%3===1?'rgba(242,211,138,.55)':'rgba(126,215,210,.55)');
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      }
+      ctx.font='52px Playfair Display'; ctx.fillStyle='#f2d38a'; ctx.textAlign='center';
+      ctx.shadowColor='rgba(216,196,255,.9)'; ctx.shadowBlur=22;
+      ctx.fillText('MEMORY',256,310);
+      ctx.font='64px Playfair Display';
+      ctx.fillText('TREE',256,392);
+      ctx.font='22px Playfair Display'; ctx.fillStyle='rgba(255,255,255,.58)'; ctx.shadowBlur=10;
+      ctx.fillText('floating moments',256,452);
+      addPhotoMesh(new THREE.CanvasTexture(c), true);
+    }
+    function disposePhoto(photo){
+      mainGroup.remove(photo.mesh);
+      photo.mesh.traverse(obj=>{
+        if(obj.geometry) obj.geometry.dispose();
+        if(obj.material){
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          mats.forEach(m=>{ if(m.map) m.map.dispose(); m.dispose(); });
+        }
+      });
+      if(photo.texture && photo.texture.dispose) photo.texture.dispose();
+    }
+    function resetPhotos(){
+      while(photos.length) disposePhoto(photos.pop());
+      uploadedPhotoCount = 0;
+      STATE.focusIndex = 0;
+      STATE.focusTarget = null;
+      STATE.hand.flickStartX = null;
+      STATE.hand.flickStartY = null;
+      STATE.hand.flickArmed = false;
+      GESTURE_SYSTEM.reset();
+      createDefaultPhoto();
+      setMode('TREE');
+      const input = document.getElementById('file-input');
+      if(input) input.value = '';
+      const status=document.getElementById('gesture-text');
+      if(status){ status.innerText='MEMORIES RESET'; status.style.color='#d4af37'; }
+    }
+    function setupPostProcessing(){ const renderPass=new RenderPass(scene,camera); bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),1.5,.4,.85); bloomPass.threshold=.82; bloomPass.strength=DEVICE.isMobile?.42:.76; bloomPass.radius=DEVICE.isMobile?.48:.78; composer=new EffectComposer(renderer); composer.addPass(renderPass); composer.addPass(bloomPass); }
+    function updateObjects(dt){
+      for(const b of instanceBatches) b.update(dt);
+      const focus = STATE.mode==='FOCUS';
+      const scatter = STATE.mode==='SCATTER';
+      const showAll = STATE.mode==='SHOW_ALL';
+      for(const g of gifts){
+        let target = focus || scatter || showAll ? g.posScatter : g.posTree;
+        let targetScale = (focus || showAll) ? .08 : 1;
+        g.current.lerp(target, Math.min(1,3.5*dt));
+        g.scale=THREE.MathUtils.lerp(g.scale,targetScale,Math.min(1,3*dt));
+        g.mesh.position.copy(g.current);
+        g.mesh.scale.setScalar(g.scale);
+        if(scatter){g.mesh.rotation.x+=g.spin.x*dt; g.mesh.rotation.y+=g.spin.y*dt;}
+        else { g.mesh.rotation.y+=dt*.18; g.mesh.rotation.z=Math.sin(STATE.time*.8+g.posTree.y)*.08; }
+      }
+      const inv = (focus || showAll) ? mainGroup.matrixWorld.clone().invert() : null;
+      const cols = Math.max(1, Math.ceil(Math.sqrt(photos.length)));
+      const rows = Math.max(1, Math.ceil(photos.length / cols));
+      const spacingX = photos.length > 16 ? 3.15 : 3.8;
+      const spacingY = photos.length > 16 ? 2.55 : 3.05;
+      for(let pi=0; pi<photos.length; pi++){
+        const p = photos[pi];
+        let target=p.posTree, scale=.5;
+        if(showAll){
+          const col = pi % cols;
+          const row = Math.floor(pi / cols);
+          target = new THREE.Vector3((col-(cols-1)/2)*spacingX, ((rows-1)/2-row)*spacingY, 18).applyMatrix4(inv);
+          scale = photos.length > 20 ? .72 : (photos.length > 10 ? .9 : 1.12);
+        } else if(focus){
+          if(p.mesh===STATE.focusTarget){
+            target=new THREE.Vector3(0,0,20).applyMatrix4(inv);
+            target.y += Math.sin(STATE.time)*.45;
+            scale=3.4;
+          } else {
+            target=p.posScatter;
+            scale=.12;
+          }
+        } else if(scatter){
+          target=p.posScatter;
+          scale=1;
+        }
+        p.current.lerp(target, Math.min(1,3.6*dt));
+        p.scale=THREE.MathUtils.lerp(p.scale,scale,Math.min(1,3*dt));
+        p.mesh.position.copy(p.current);
+        p.mesh.scale.setScalar(p.scale);
+        if(scatter || focus || showAll){ p.mesh.lookAt(camera.position); }
+        else { p.mesh.lookAt(0,p.posTree.y,0); p.mesh.rotateY(Math.PI); }
+      }
+    }
+    function handleRotation(dt){
+      // Damped hand-follow rotation: no frame-by-frame accumulation, so the tree will not spin out of control.
+      if((STATE.mode==='SCATTER' || STATE.mode==='FOCUS' || STATE.mode==='SHOW_ALL') && STATE.hand.detected){
+        const desiredY = THREE.MathUtils.clamp(STATE.hand.x * .42, -0.75, 0.75);
+        const desiredX = THREE.MathUtils.clamp(STATE.hand.y * .24, -0.34, 0.34);
+        STATE.targetRotation.y = THREE.MathUtils.lerp(STATE.targetRotation.y, desiredY, Math.min(1, dt * 2.2));
+        STATE.targetRotation.x = THREE.MathUtils.lerp(STATE.targetRotation.x, desiredX, Math.min(1, dt * 2.0));
+      } else if(STATE.mode==='TREE'){
+        STATE.targetRotation.y += .045*dt;
+        STATE.targetRotation.x = THREE.MathUtils.lerp(STATE.targetRotation.x, 0, Math.min(1, dt * 2.0));
+      } else {
+        STATE.targetRotation.x = THREE.MathUtils.lerp(STATE.targetRotation.x, 0, Math.min(1, dt * 1.2));
+      }
+      STATE.rotation.x += (STATE.targetRotation.x-STATE.rotation.x)*2.4*dt;
+      STATE.rotation.y += (STATE.targetRotation.y-STATE.rotation.y)*2.4*dt;
+      mainGroup.rotation.set(STATE.rotation.x, STATE.rotation.y, 0);
+    }
+    let frameCounter=0, fpsTimer=0;
+    function adaptiveQuality(dt){ frameCounter++; fpsTimer+=dt; if(fpsTimer<1) return; STATE.fps = frameCounter/fpsTimer; frameCounter=0; fpsTimer=0; if(STATE.fps<42 && STATE.qualityStep<2){ STATE.qualityStep++; const next=Math.max(.9, renderer.getPixelRatio()-.25); renderer.setPixelRatio(next); composer.setSize(innerWidth,innerHeight); if(bloomPass) bloomPass.strength*=.82; document.getElementById('quality-badge').textContent=`AUTO QUALITY · MEMORY TREE · DPR ${next.toFixed(2)}`; } }
+    function animate(){ requestAnimationFrame(animate); const dt=Math.min(clock.getDelta(), .033); STATE.time+=dt; if(nebulaMesh) nebulaMesh.material.uniforms.time.value=STATE.time; if(snowSystem){ snowSystem.material.uniforms.time.value=STATE.time; const target=(STATE.mode==='SCATTER'||STATE.mode==='SHOW_ALL')?5:1; STATE.snowSpeedMultiplier+=(target-STATE.snowSpeedMultiplier)*dt*2; snowSystem.material.uniforms.speedMultiplier.value=STATE.snowSpeedMultiplier; }
+      const camX=Math.sin(STATE.time*.2)*5, camY=Math.cos(STATE.time*.3)*3; camera.position.x+=(camX-camera.position.x)*dt*.5; camera.position.y+=(camY-camera.position.y)*dt*.5; camera.lookAt(0,0,0); if(materials.diamond) materials.diamond.emissiveIntensity=.1 + Math.pow((Math.sin(STATE.time*2.2)+1)/2, 8)*.8; handleRotation(dt); updateObjects(dt); adaptiveQuality(dt); composer.render(); }
+    function setMode(mode, keepCurrentPhoto = false){
+      if(STATE.mode===mode && mode!=='FOCUS') return;
+      STATE.mode=mode;
+      if(mode==='FOCUS'){
+        if(!photos.length){ STATE.focusTarget=null; }
+        else {
+          if(!keepCurrentPhoto) STATE.focusIndex = Math.floor(Math.random()*photos.length);
+          STATE.focusIndex = THREE.MathUtils.euclideanModulo(STATE.focusIndex, photos.length);
+          STATE.focusTarget = photos[STATE.focusIndex].mesh;
+        }
+      } else STATE.focusTarget=null;
+      document.querySelectorAll('.mode-btn[data-mode]').forEach(btn=>btn.classList.toggle('active', btn.dataset.mode===mode));
+    }
+    function nextPhoto(step = 1){
+      if(!photos.length) return;
+      STATE.focusIndex = THREE.MathUtils.euclideanModulo(STATE.focusIndex + step, photos.length);
+      STATE.focusTarget = photos[STATE.focusIndex].mesh;
+      setMode('FOCUS', true);
+      const status=document.getElementById('gesture-text');
+      status.innerText=`MEMORY ${STATE.focusIndex+1}/${photos.length}`;
+      status.style.color='#fff';
+    }
+    async function createHandLandmarker(vision){
+      const baseOptions = { modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task' };
+      try {
+        return await HandLandmarker.createFromOptions(vision,{ baseOptions:{...baseOptions, delegate:'GPU'}, runningMode:'VIDEO', numHands:2 });
+      } catch(gpuError) {
+        console.warn('MediaPipe GPU delegate failed, falling back to CPU:', gpuError);
+        return await HandLandmarker.createFromOptions(vision,{ baseOptions, runningMode:'VIDEO', numHands:2 });
+      }
+    }
+    async function initMediaPipe(){
+      if(mediaPipeRunning && handLandmarker && video && video.srcObject) return;
+      const hint=document.getElementById('webcam-hint'), text=document.getElementById('gesture-text');
+      try{
+        video=document.getElementById('webcam');
+        hint.style.opacity=1;
+        text.innerText='LOADING AI...';
+        const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm');
+        handLandmarker=await createHandLandmarker(vision);
+        if(!navigator.mediaDevices?.getUserMedia) throw new Error('getUserMedia is not available in this browser.');
+        const stream=await navigator.mediaDevices.getUserMedia({
+          video:{ width:{ideal:640}, height:{ideal:480}, facingMode:'user' },
+          audio:false
+        });
+        video.srcObject=stream;
+        video.muted=true;
+        video.playsInline=true;
+        await video.play();
+        text.innerText='CAMERA READY';
+        text.style.color='#bfa45f';
+        if(!mediaPipeRunning){ mediaPipeRunning = true; predictWebcam(); }
+      }
+      catch(e){
+        console.warn('MediaPipe init failed:', e);
+        hint.style.opacity=1;
+        text.innerText='CAMERA OFF';
+        text.style.color='#777';
+        mediaPipeRunning = false;
+      }
+    }
+    let lastPredict=0;
+    function dist2D(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+    function dist3D(a,b){ return Math.hypot(a.x-b.x, a.y-b.y, (a.z||0)-(b.z||0)); }
+    function palmSize(lm){ return Math.max(0.001, dist3D(lm[0], lm[9])); }
+    function fingerIsOpen(lm, tip, pip, mcp){
+      const palm = palmSize(lm);
+      const tipDist = dist3D(lm[tip], lm[0]) / palm;
+      const pipDist = dist3D(lm[pip], lm[0]) / palm;
+      const mcpDist = dist3D(lm[mcp], lm[0]) / palm;
+      return tipDist > pipDist * 1.08 && tipDist > mcpDist * 1.32;
+    }
+    function classifyHand(lm){
+      const palm = palmSize(lm);
+
+      const index = fingerIsOpen(lm,8,6,5);
+      const middle = fingerIsOpen(lm,12,10,9);
+      const ring = fingerIsOpen(lm,16,14,13);
+      const pinky = fingerIsOpen(lm,20,18,17);
+      const openCount = [index,middle,ring,pinky].filter(Boolean).length;
+
+      const thumbIndex = dist3D(lm[4], lm[8]) / palm;
+      const thumbMiddle = dist3D(lm[4], lm[12]) / palm;
+      const thumbRing = dist3D(lm[4], lm[16]) / palm;
+      const thumbPinky = dist3D(lm[4], lm[20]) / palm;
+
+      const indexPalm = dist3D(lm[8], lm[0]) / palm;
+      const middlePalm = dist3D(lm[12], lm[0]) / palm;
+      const ringPalm = dist3D(lm[16], lm[0]) / palm;
+      const pinkyPalm = dist3D(lm[20], lm[0]) / palm;
+      const avgFingerPalm = (indexPalm + middlePalm + ringPalm + pinkyPalm) / 4;
+      const indexPipPalm = dist3D(lm[6], lm[0]) / palm;
+
+      // 关键修复：握拳时，拇指和食指也可能很近，所以不能只用 thumbIndex 判断捏合。
+      // 先判断“整只手是否收成拳”：四根手指整体靠近掌心，且几乎没有手指伸展。
+      const allFingersNearPalm = indexPalm < 1.05 && middlePalm < 1.12 && ringPalm < 1.12 && pinkyPalm < 1.12;
+      const fistLikely = openCount === 0 && avgFingerPalm < 1.16 && allFingersNearPalm;
+
+      // 🤌 捏合：拇指尖和食指尖很近，但食指不能像握拳一样完全缩回掌心。
+      // 这样可以把“捏合”与“握拳”分开。
+      const indexNotBuried = indexPalm > 0.98 && indexPalm > indexPipPalm * 0.92;
+      const otherFingersNotAllBuried = (middlePalm + ringPalm + pinkyPalm) / 3 > 0.96;
+      const thumbIndexPinch = thumbIndex < 0.36 && indexNotBuried && otherFingersNotAllBuried;
+
+      // 兼容三指捏合：拇指靠近食指/中指，但仍然排除拳头。
+      const multiTipPinch = thumbIndex < 0.42 && thumbMiddle < 0.48 && indexPalm > 0.94 && middlePalm > 0.94 && !fistLikely;
+
+      if(!fistLikely && (thumbIndexPinch || multiTipPinch)) return 'PINCH';
+      if(openCount >= 3) return 'OPEN';
+      if(fistLikely || (openCount <= 1 && avgFingerPalm < 1.08)) return 'FIST';
+      if(index && !middle && !ring && !pinky) return 'INDEX_POINT';
+      return 'NONE';
+    }
+    function drawCameraFrame(ctx){
+      ctx.save();
+      ctx.clearRect(0,0,300,150);
+      if(video && video.readyState >= 2){
+        ctx.scale(-1,1);
+        ctx.drawImage(video, -300, 0, 300, 150);
+      } else {
+        ctx.fillStyle='#050505';
+        ctx.fillRect(0,0,300,150);
+      }
+      ctx.restore();
+    }
+    function drawHandPreview(ctx, lm, color='#bfa45f'){
+      ctx.save();
+      ctx.fillStyle=color;
+      ctx.strokeStyle='rgba(191,164,95,.65)';
+      ctx.lineWidth=1;
+      const chains=[[0,1,2,3,4],[0,5,6,7,8],[5,9,13,17],[0,17,18,19,20],[9,10,11,12],[13,14,15,16]];
+      for(const chain of chains){
+        ctx.beginPath();
+        chain.forEach((idx,i)=>{ const p=lm[idx]; const x=(1-p.x)*300, y=p.y*150; if(i) ctx.lineTo(x,y); else ctx.moveTo(x,y); });
+        ctx.stroke();
+      }
+      for(const idx of [0,4,8,12,16,20]){
+        const p=lm[idx];
+        ctx.beginPath(); ctx.arc((1-p.x)*300,p.y*150,idx===8?4:3,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+    function pickRandomPhoto(){
+      if(!photos.length) return;
+      setMode('FOCUS', false);
+      const status=document.getElementById('gesture-text');
+      if(status){ status.innerText=`✦ 抽取回忆 ${STATE.focusIndex+1}/${photos.length} ✦`; status.style.color='#fff'; }
+    }
+    function classifySceneGesture(landmarks){
+      const handGestures = landmarks.map(classifyHand);
+      const openHands = handGestures.filter(g=>g==='OPEN').length;
+      if(openHands >= 2) return {gesture:'BOTH_OPEN', handGestures};
+      if(handGestures.includes('PINCH')) return {gesture:'PINCH', handGestures};
+      if(handGestures.includes('FIST')) return {gesture:'FIST', handGestures};
+      if(handGestures.includes('OPEN')) return {gesture:'OPEN', handGestures};
+      if(handGestures.includes('INDEX_POINT')) return {gesture:'INDEX_POINT', handGestures};
+      return {gesture:'NONE', handGestures};
+    }
+    async function predictWebcam(){
+      const now=performance.now();
+      if(now-lastPredict>45 && handLandmarker && video && video.readyState>=2){
+        lastPredict=now;
+        const canvas=document.getElementById('webcam-canvas'), ctx=canvas.getContext('2d');
+        let gesture='NONE';
+        try{
+          drawCameraFrame(ctx); // 修复黑屏：无论有没有识别到手，都显示摄像头画面。
+          const result=handLandmarker.detectForVideo(video, now);
+          const landmarks = result.landmarks || [];
+          if(landmarks.length){
+            const primary=landmarks[0];
+            STATE.hand.detected=true;
+            STATE.hand.lastPalmX=STATE.hand.palmX;
+            STATE.hand.palmX=primary[9].x;
+            STATE.hand.x += ((primary[9].x-.5)*3.2-STATE.hand.x)*.11;
+            STATE.hand.y += ((primary[9].y-.5)*3.2-STATE.hand.y)*.11;
+            landmarks.forEach((lm, idx)=>drawHandPreview(ctx,lm, idx===0?'#bfa45f':'#9bdcff'));
+            gesture = classifySceneGesture(landmarks).gesture;
+          } else {
+            STATE.hand.detected=false;
+            STATE.hand.pinchHeld=false;
+            GESTURE_SYSTEM.update('NONE');
+          }
+        } catch(err){
+          console.warn('Hand detection failed:', err);
+          gesture='NONE';
+        }
+
+        // 捏合是一次性动作：捏住不会疯狂抽取，松开后再次捏合才会重新抽取。
+        if(gesture === 'PINCH'){
+          if(!STATE.hand.pinchHeld){
+            STATE.hand.pinchHeld = true;
+            pickRandomPhoto();
+          }
+        } else {
+          STATE.hand.pinchHeld = false;
+        }
+
+        const stable= gesture === 'PINCH' ? null : GESTURE_SYSTEM.update(gesture);
+        const status=document.getElementById('gesture-text');
+        if(stable==='BOTH_OPEN'){
+          setMode('SHOW_ALL'); status.innerText='✧ 展示所有回忆 ✧'; status.style.color='#fff';
+        } else if(stable==='FIST'){
+          setMode('TREE'); status.innerText='❖ 聚合成树 ❖'; status.style.color='#d4af37';
+        } else if(stable==='OPEN'){
+          setMode('SCATTER'); status.innerText='✧ 分散开来 ✧'; status.style.color='#bfa45f';
+        } else if(stable==='INDEX_POINT'){
+          // 保留食指为辅助聚焦，主要交互已改为捏合抽取。
+          if(STATE.mode!=='FOCUS') pickRandomPhoto();
+        } else if(gesture !== 'PINCH'){
+          const nameMap={BOTH_OPEN:'双手张开',PINCH:'捏合',INDEX_POINT:'食指',FIST:'握拳',OPEN:'张开手',NONE:'无手势'};
+          status.innerText=STATE.hand.detected?`识别中 · ${nameMap[gesture]||gesture}`:'等待手势';
+          status.style.color=STATE.hand.detected?'#bfa45f':'#666';
+        }
+      }
+      requestAnimationFrame(predictWebcam);
+    }
+
+    const THEMES = {
+      fresh: { name:'清新蓝金', gold:0xd4af37, red:0xff6f86, green:0x1b8d78, orange:0xc98a32, ice:0xaaddff, ribbon:0x8fd8ff, core:0x9fd7ff, diamondEmissive:0xdff6ff },
+      dream: { name:'梦幻紫金', gold:0xe0c886, red:0x9c6bff, green:0x34c7b5, orange:0xd09b55, ice:0xd8c4ff, ribbon:0xd8c4ff, core:0xd9b8ff, diamondEmissive:0xf3e8ff },
+      autumn: { name:'暖色秋日', gold:0xffc86b, red:0xd85c3f, green:0x5f7f55, orange:0xe08f3e, ice:0xffdfaa, ribbon:0xffc36a, core:0xffb35a, diamondEmissive:0xffefd0 },
+      cyber: { name:'赛博霓虹', gold:0xffd600, red:0xff3df2, green:0x00ffe1, orange:0xff8a00, ice:0x7a7cff, ribbon:0x00d7ff, core:0x00f5ff, diamondEmissive:0xe9fcff }
+    };
+    function applyTheme(name='fresh'){
+      const t = THEMES[name] || THEMES.fresh;
+      if(materials.gold) materials.gold.color.setHex(t.gold);
+      if(materials.red){ materials.red.color.setHex(t.red); if(materials.red.sheenColor) materials.red.sheenColor.setHex(t.red); }
+      if(materials.green){ materials.green.color.setHex(t.green); if(materials.green.sheenColor) materials.green.sheenColor.setHex(t.green); }
+      if(materials.orange){ materials.orange.color.setHex(t.orange); if(materials.orange.sheenColor) materials.orange.sheenColor.setHex(t.orange); }
+      if(materials.ice) materials.ice.color.setHex(t.ice);
+      if(materials.ribbon) materials.ribbon.color.setHex(t.ribbon);
+      if(materials.diamond && materials.diamond.emissive) materials.diamond.emissive.setHex(t.diamondEmissive);
+      if(coreLight) coreLight.color.setHex(t.core);
+      const badge = document.getElementById('quality-badge');
+      if(badge) badge.textContent = `AUTO QUALITY · MEMORY TREE · tiaotiao · v3.7 · ${t.name}`;
+    }
+
+    function setupEvents(){
+      const toggleUI=()=>document.getElementById('ui-layer').classList.toggle('ui-hidden'); document.getElementById('ui-toggle').addEventListener('click', toggleUI);
+      document.querySelectorAll('.mode-btn[data-mode]').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
+      const nextBtn=document.querySelector('[data-action="NEXT_PHOTO"]'); if(nextBtn) nextBtn.addEventListener('click',()=>nextPhoto(1));
+      const resetBtn=document.querySelector('[data-action="RESET_PHOTOS"]'); if(resetBtn) resetBtn.addEventListener('click',resetPhotos);
+      const startCamBtn=document.querySelector('[data-action="START_CAMERA"]'); if(startCamBtn) startCamBtn.addEventListener('click',initMediaPipe);
+      const themeSelect=document.getElementById('theme-select'); if(themeSelect) themeSelect.addEventListener('change',()=>applyTheme(themeSelect.value));
+      let resizeTimer=0; addEventListener('resize',()=>{ clearTimeout(resizeTimer); resizeTimer=setTimeout(()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); composer.setSize(innerWidth,innerHeight); },120); });
+      document.getElementById('file-input').addEventListener('change', e=>{ const files=Array.from(e.target.files||[]).slice(0, Math.max(0, CONFIG.maxPhotos-uploadedPhotoCount)); if(!files.length) return; files.forEach(f=>{ const r=new FileReader(); r.onload=ev=>{ new THREE.TextureLoader().load(ev.target.result, t=>{ uploadedPhotoCount++; addPhotoMesh(t); }, undefined, err=>console.warn('Texture load failed:',err)); }; r.readAsDataURL(f); }); e.target.value=''; });
+      addEventListener('keydown', e=>{ const k=e.key.toLowerCase(); if(k==='h') toggleUI(); if(k==='1') setMode('TREE'); if(k==='2') setMode('SCATTER'); if(k==='3') setMode('FOCUS'); if(k==='4') setMode('SHOW_ALL'); if(k==='n' || k==='arrowright') nextPhoto(1); if(k==='arrowleft') nextPhoto(-1); if(k==='r') resetPhotos(); if(k==='escape') document.getElementById('ui-layer').classList.remove('ui-hidden'); });
+    }
+    async function init(){ initThree(); createBackground(); makeMaterialLibrary(); applyTheme("fresh"); createContent(); createSnow(); setupPostProcessing(); setupEvents(); animate(); setTimeout(()=>{ const l=document.getElementById('loader'); l.style.opacity=0; setTimeout(()=>l.remove(),1000); },650); initMediaPipe(); }
+    init();
+  </script>
+</body>
+</html>

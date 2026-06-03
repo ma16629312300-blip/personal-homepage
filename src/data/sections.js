@@ -1,3 +1,7 @@
+const palmUniverseUrl = 'https://ma16629312300-blip.github.io/palm-universe-download-site-20260601202734/';
+const memoryAlbumUrl = 'https://cosmic-starship-0aed8e.netlify.app/';
+const memoryTreeDownloadUrl = `${import.meta.env.BASE_URL}downloads/memory_tree_v3_7_theme_switchable.html`;
+
 export const sections = [
   {
     id: 'intro',
@@ -6,12 +10,12 @@ export const sections = [
     label: 'INTRO',
     supertitle: 'PERSONAL STAGE',
     subtitle: '个人主页的动态入口',
-    copy: '进入 tiaotiao 的个人简介、作品归档与实验玩法。中文是主叙事，英文只作为菜单节奏和视觉标签。',
+    copy: '进入 tiaotiao 的个人简介、作品归档与实验玩法。中文是主叙事，英文作为菜单节奏、编号和视觉标签。',
     watermark: 'INTRO',
     layout: 'balanced',
     moonPhase: 'new',
-    moonOrbit: 'center',
-    tags: ['蓝黑白主调', '舞台菜单', '原创徽章', '丝滑转场'],
+    moonOrbit: 'top',
+    tags: ['蓝黑白主调', '月相徽章', '时钟背景', '丝滑转场'],
   },
   {
     id: 'profile',
@@ -38,7 +42,7 @@ export const sections = [
     watermark: 'WORKS',
     layout: 'archive',
     moonPhase: 'half',
-    moonOrbit: 'wide',
+    moonOrbit: 'middle',
     cards: [
       {
         meta: 'WEB / PORTFOLIO',
@@ -63,24 +67,26 @@ export const sections = [
     watermark: 'PLAYGROUND',
     layout: 'arcade',
     moonPhase: 'gibbous',
-    moonOrbit: 'high',
+    moonOrbit: 'lower',
     cards: [
       {
         meta: 'MINI GAME / FEATURED',
         title: '掌中宇宙',
         text: '一个已经完成的小玩法项目入口，像把微型宇宙放进手心里。',
-        href: 'https://ma16629312300-blip.github.io/palm-universe-download-site-20260601202734/',
-        action: '进入掌中宇宙',
+        internalHref: '#palm-universe',
+        action: '查看掌中宇宙',
+      },
+      {
+        meta: 'MEMORY / NEW',
+        title: '记忆相册',
+        text: '新的互动相册项目，收纳碎片、星光和适合慢慢翻看的个人记忆。',
+        internalHref: '#memory-album',
+        action: '查看记忆相册',
       },
       {
         meta: 'VISUAL LAB',
         title: '视觉特效收藏',
         text: '收集粒子、转场、鼠标互动和图形实验。',
-      },
-      {
-        meta: 'TOOLS',
-        title: '实用小工具',
-        text: '放生成器、整理器、计算器等入口。',
       },
     ],
   },
@@ -95,7 +101,69 @@ export const sections = [
     watermark: 'CONTACT',
     layout: 'terminal',
     moonPhase: 'full',
-    moonOrbit: 'low',
+    moonOrbit: 'bottom',
     tags: ['Email', 'GitHub', 'Bilibili', 'Social'],
+    links: [
+      {
+        label: '邮箱 2058194218@qq.com',
+        href: 'mailto:2058194218@qq.com',
+      },
+    ],
   },
 ];
+
+export const detailPages = [
+  {
+    id: 'palm-universe',
+    parentId: 'playground',
+    number: '03-A',
+    title: '掌中宇宙',
+    label: 'PALM UNIVERSE',
+    supertitle: 'PLAYGROUND / SIDE PAGE',
+    subtitle: '作者 tiaotiao',
+    copy: '掌中宇宙是一个把微型宇宙、星体轨迹和掌心尺度结合起来的小玩法项目。它更像一个轻量互动玩具：打开后可以进入属于自己的小型星空，把视觉实验和一点点浪漫收进页面里。',
+    watermark: 'PALM',
+    layout: 'detail',
+    moonPhase: 'half',
+    moonOrbit: 'middle',
+    tags: ['作者 tiaotiao', '掌心宇宙', '互动玩法', '在线入口'],
+    links: [
+      {
+        label: '在线预览',
+        href: palmUniverseUrl,
+      },
+      {
+        label: '下载页面',
+        href: palmUniverseUrl,
+      },
+    ],
+  },
+  {
+    id: 'memory-album',
+    parentId: 'playground',
+    number: '03-B',
+    title: '记忆相册',
+    label: 'MEMORY ALBUM',
+    supertitle: 'PLAYGROUND / SIDE PAGE',
+    subtitle: '作者 tiaotiao',
+    copy: '记忆相册是一个偏梦境感的在线相册项目，用星舰、宇宙和回忆的意象包装个人影像与片段。它适合被当作一个安静的展示空间，也可以作为后续影像作品的入口。',
+    watermark: 'MEMORY',
+    layout: 'detail',
+    moonPhase: 'gibbous',
+    moonOrbit: 'bottom',
+    tags: ['作者 tiaotiao', '记忆收藏', '在线预览', '文件下载'],
+    links: [
+      {
+        label: '在线预览',
+        href: memoryAlbumUrl,
+      },
+      {
+        label: '下载记忆树',
+        href: memoryTreeDownloadUrl,
+        download: 'memory_tree_v3_7_theme_switchable.html',
+      },
+    ],
+  },
+];
+
+export const allSections = [...sections, ...detailPages];

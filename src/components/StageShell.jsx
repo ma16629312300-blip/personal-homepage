@@ -19,6 +19,27 @@ export default function StageShell({ section, wipeActive, children }) {
       <div className="lunar-track track-c" aria-hidden="true" />
       <div className="lunar-arc arc-a" aria-hidden="true" />
       <div className="lunar-arc arc-b" aria-hidden="true" />
+      <div className="clock-field clock-field-a" aria-hidden="true">
+        <span className="clock-hand hand-hour" />
+        <span className="clock-hand hand-minute" />
+        <span className="clock-hand hand-second" />
+      </div>
+      <div className="clock-field clock-field-b" aria-hidden="true">
+        <span className="clock-hand hand-hour" />
+        <span className="clock-hand hand-minute" />
+      </div>
+      <div className="clock-spire" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="archive-fragments" aria-hidden="true">
+        <span className="fragment fragment-a" />
+        <span className="fragment fragment-b" />
+        <span className="fragment fragment-c" />
+        <span className="fragment fragment-d" />
+      </div>
       <div className="stage-grid" aria-hidden="true" />
       <div className="stage-layout">{children}</div>
     </main>

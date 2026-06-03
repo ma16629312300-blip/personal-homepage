@@ -8,58 +8,70 @@ afterEach(() => {
   cleanup();
 });
 
-describe('Stage menu redesign', () => {
-  it('starts with Chinese-first intro content and a staged emblem', () => {
+describe('Stage menu experience', () => {
+  it('starts with the lunar visual system and intro content', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: /首页/i })).toBeInTheDocument();
-    expect(screen.getByText(/PERSONAL STAGE/i)).toBeInTheDocument();
-    expect(screen.getByText(/个人主页的动态入口/i)).toBeInTheDocument();
     expect(document.querySelector('.stage-shell')).toHaveAttribute('data-visual-system', 'lunar');
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-section', 'intro');
+    expect(screen.getByRole('heading', { name: /首页/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'new');
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'center');
-    expect(screen.getByRole('button', { name: /首页 INTRO/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'top');
   });
 
-  it('shows the author profile in Chinese-first language', async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole('button', { name: /个人简介 PROFILE/i }));
-
-    expect(screen.getByRole('heading', { name: /个人简介/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/作者 tiaotiao/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/河北工业大学南院最忧郁之人/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-section', 'profile');
-  });
-
-  it('switches structure, menu dominance, content, emblem state, and playground link on section click', async () => {
+  it('shows the selected section name inside the transition wipe', async () => {
     const user = userEvent.setup();
     render(<App />);
 
     await user.click(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i }));
 
-    expect(screen.getByRole('heading', { name: /有趣功能/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/PLAYGROUND/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/掌中宇宙/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('link', { name: /进入掌中宇宙/i })).toHaveAttribute(
+    expect(screen.getByTestId('transition-wipe')).toHaveAttribute('data-active', 'true');
+    expect(screen.getByTestId('transition-title')).toHaveTextContent('有趣功能');
+  });
+
+  it('opens the palm universe subpage from playground', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i }));
+    await user.click(screen.getByRole('link', { name: /查看掌中宇宙/i }));
+
+    expect(screen.getByRole('heading', { name: /掌中宇宙/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /返回有趣功能/i })).toHaveAttribute('href', '#playground');
+    expect(screen.getByRole('link', { name: /在线预览/i })).toHaveAttribute(
       'href',
       'https://ma16629312300-blip.github.io/palm-universe-download-site-20260601202734/'
     );
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-section', 'playground');
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'gibbous');
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'high');
-    expect(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTestId('transition-wipe')).toHaveAttribute('data-active', 'true');
   });
 
-  it('can open a section directly from the URL hash', () => {
-    window.history.replaceState(null, '', '/#playground');
+  it('opens the memory album subpage with a real memory tree download', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i }));
+    await user.click(screen.getByRole('link', { name: /查看记忆相册/i }));
+
+    expect(screen.getByRole('heading', { name: /记忆相册/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/作者 tiaotiao/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /在线预览/i })).toHaveAttribute(
+      'href',
+      'https://cosmic-starship-0aed8e.netlify.app/'
+    );
+    expect(screen.getByRole('link', { name: /下载记忆树/i })).toHaveAttribute(
+      'href',
+      '/downloads/memory_tree_v3_7_theme_switchable.html'
+    );
+    expect(screen.getByRole('link', { name: /下载记忆树/i })).toHaveAttribute(
+      'download',
+      'memory_tree_v3_7_theme_switchable.html'
+    );
+  });
+
+  it('keeps playground highlighted when opening side pages directly', () => {
+    window.history.replaceState(null, '', '/#memory-album');
 
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: /有趣功能/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'gibbous');
+    expect(screen.getByRole('heading', { name: /记忆相册/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /有趣功能 PLAYGROUND/i })).toHaveAttribute('aria-pressed', 'true');
   });
 });

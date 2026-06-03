@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
+import BgmControl from './components/BgmControl.jsx';
 import CharacterStage from './components/CharacterStage.jsx';
 import StageContent from './components/StageContent.jsx';
 import StageMenu from './components/StageMenu.jsx';
 import StageShell from './components/StageShell.jsx';
 import TransitionWipe from './components/TransitionWipe.jsx';
-import { sections } from './data/sections.js';
+import { allSections, sections } from './data/sections.js';
 
 const getSectionFromHash = () => {
   const hashId = window.location.hash.replace('#', '');
-  return sections.some((section) => section.id === hashId) ? hashId : 'intro';
+  return allSections.some((section) => section.id === hashId) ? hashId : 'intro';
 };
 
 export default function App() {
@@ -16,9 +17,10 @@ export default function App() {
   const [wipeActive, setWipeActive] = useState(false);
 
   const activeSection = useMemo(
-    () => sections.find((section) => section.id === activeId) ?? sections[0],
+    () => allSections.find((section) => section.id === activeId) ?? sections[0],
     [activeId]
   );
+  const menuActiveId = activeSection.parentId ?? activeSection.id;
 
   const handleSelect = (sectionId) => {
     if (sectionId === activeId) return;
@@ -41,10 +43,11 @@ export default function App() {
 
   return (
     <StageShell section={activeSection} wipeActive={wipeActive}>
-      <StageMenu sections={sections} activeId={activeId} onSelect={handleSelect} />
+      <StageMenu sections={sections} activeId={menuActiveId} onSelect={handleSelect} />
       <StageContent section={activeSection} />
       <CharacterStage section={activeSection} />
-      <TransitionWipe active={wipeActive} />
+      <TransitionWipe active={wipeActive} section={activeSection} />
+      <BgmControl />
     </StageShell>
   );
 }
