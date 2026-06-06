@@ -44,6 +44,7 @@ a {
     radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 28%),
     linear-gradient(118deg, rgba(255, 255, 255, 0.08), transparent 30%),
     linear-gradient(156deg, #02040a 0%, #071223 50%, #02040a 100%);
+  background-color: #02040a;
   transition: background 520ms ease;
 }
 
@@ -64,8 +65,8 @@ a {
 }
 
 .stage-shell[data-section="works"] {
-  --accent: #f8fbff;
-  --accent-soft: #6ee7ff;
+  --accent: #94ccf0;
+  --accent-soft: #d4f0ff;
   --accent-deep: #14284d;
   --flash: #ff355d;
   --panel-shift: -24px;
@@ -527,7 +528,8 @@ a {
   padding: 0 0.95rem 0 1.25rem;
   border: 0;
   color: var(--ink);
-  background:
+  background-color: #eaedf0;
+  background-image:
     linear-gradient(180deg, color-mix(in srgb, var(--paper) 92%, var(--accent)) 0%, var(--paper) 58%, #d9e8ed 100%);
   cursor: pointer;
   clip-path: polygon(0 0, 92% 0, 100% 100%, 7% 100%);
@@ -597,11 +599,12 @@ a {
 
 .stage-menu__glyph {
   position: relative;
-  width: 0.78rem;
+  width: 1rem;
   aspect-ratio: 1;
-  border: 2px solid currentColor;
+  border: 2px solid rgba(255, 255, 255, 0.85);
   border-radius: 50%;
-  opacity: 0.88;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 0 0.45rem rgba(255, 255, 255, 0.22);
 }
 
 .stage-menu__glyph::after {
@@ -610,13 +613,19 @@ a {
   inset: -2px auto -2px 42%;
   width: 55%;
   border-radius: 0 999px 999px 0;
-  background: currentColor;
+  background: var(--ink);
+}
+
+.stage-menu__item[data-menu-section="intro"] .stage-menu__glyph {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 
 .stage-menu__item[data-menu-section="intro"] .stage-menu__glyph::after {
   inset: -2px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--ink);
 }
 
 .stage-menu__item[data-menu-section="works"] .stage-menu__glyph::after {
@@ -626,6 +635,17 @@ a {
 
 .stage-menu__item[data-menu-section="playground"] .stage-menu__glyph {
   transform: rotate(-28deg);
+}
+
+.stage-menu__item[data-menu-section="playground"] .stage-menu__glyph::after {
+  left: 28%;
+  width: 38%;
+}
+
+.stage-menu__item[data-menu-section="contact"] .stage-menu__glyph {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0.65rem rgba(255, 255, 255, 0.32);
 }
 
 .stage-menu__item[data-menu-section="contact"] .stage-menu__glyph::after {
@@ -960,7 +980,7 @@ a {
   background: radial-gradient(circle at 50% 50%, var(--accent-deep), #061224 72%);
   clip-path: circle(50% at 50% 50%);
   border: 0.2rem solid rgba(255, 255, 255, 0.72);
-  box-shadow: inset 0 0 2rem rgba(255, 255, 255, 0.12), 0 0 3rem color-mix(in srgb, var(--accent) 38%, transparent);
+  box-shadow: inset 0 0 2rem rgba(255, 255, 255, 0.12), 0 0 3rem color-mix(in srgb, var(--accent) 38%, transparent), 0 0 3rem var(--accent);
 }
 
 .emblem-slice {
@@ -1003,11 +1023,13 @@ a {
   overflow: hidden;
   border: 0.22rem solid rgba(255, 255, 255, 0.88);
   border-radius: 50%;
-  background:
+  background-color: #e8f4fb;
+  background-image:
     radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72) 28%, var(--accent-soft) 62%, var(--accent) 100%);
   box-shadow:
     inset -1.1rem -1rem 1.8rem rgba(0, 0, 0, 0.26),
-    0 0 2.4rem color-mix(in srgb, var(--accent) 52%, transparent);
+    0 0 2.4rem color-mix(in srgb, var(--accent) 52%, transparent),
+    0 0 2.4rem var(--accent);
   opacity: var(--moon-opacity);
   transform: translate(-50%, -50%) rotate(calc(var(--emblem-turn) * -1));
 }
@@ -1015,8 +1037,8 @@ a {
 .moon-shadow {
   inset: -5%;
   border-radius: 50%;
-  background: #031020;
-  box-shadow: inset 0 0 1.8rem rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, #0a1828, #061224);
+  box-shadow: inset 0 0 2.4rem rgba(255, 255, 255, 0.04);
   transform: translateX(var(--moon-shadow-x)) scale(var(--moon-shadow-scale));
   transition: transform 640ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1054,6 +1076,7 @@ a {
   font-weight: 1000;
   background: rgba(0, 0, 0, 0.62);
   border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  border-color: var(--accent);
   transform: translateX(-50%) skewX(-10deg);
 }
 
@@ -1423,13 +1446,18 @@ a {
 
   .emblem-stage {
     position: absolute;
-    top: 18.8rem;
-    right: -4.8rem;
+    top: 13rem;
+    right: -1.2rem;
     z-index: 1;
     width: 19rem;
     min-height: 19rem;
-    overflow: hidden;
-    opacity: 0.82;
+    opacity: 0.92;
+    pointer-events: none;
+  }
+
+  .emblem-stage .emblem-beams,
+  .emblem-stage .emblem-radar {
+    display: none;
   }
 
   .emblem-frame {
@@ -1527,7 +1555,7 @@ a {
   }
 
   .stage-menu__glyph {
-    width: 0.68rem;
+    width: 0.82rem;
   }
 
   .stage-content h1 {
@@ -1562,10 +1590,16 @@ a {
   }
 
   .emblem-stage {
-    top: 19.5rem;
-    right: -6.4rem;
-    width: 17rem;
-    min-height: 17rem;
+    top: 16rem;
+    right: -1.8rem;
+    width: 16rem;
+    min-height: 16rem;
+    pointer-events: none;
+  }
+
+  .emblem-stage .emblem-beams,
+  .emblem-stage .emblem-radar {
+    display: none;
   }
 
   .emblem-frame {
@@ -1573,9 +1607,9 @@ a {
   }
 
   .stage-shell[data-layout="detail"] .emblem-stage {
-    top: 32rem;
-    right: -10.2rem;
-    opacity: 0.32;
+    top: 28rem;
+    right: -3rem;
+    opacity: 0.38;
   }
 
   .stage-shell[data-layout="detail"] .stage-content {
