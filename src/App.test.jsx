@@ -9,10 +9,10 @@ afterEach(() => {
 });
 
 describe('Stage menu experience', () => {
-  it('starts with the lunar visual system and intro content', () => {
+  it('starts with intro content and new moon phase', () => {
     render(<App />);
 
-    expect(document.querySelector('.stage-shell')).toHaveAttribute('data-visual-system', 'lunar');
+    expect(document.querySelector('.stage-shell')).toHaveAttribute('data-section', 'intro');
     expect(screen.getByRole('heading', { name: /首页/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-phase', 'new');
     expect(screen.getByLabelText(/stage emblem/i)).toHaveAttribute('data-orbit', 'top');

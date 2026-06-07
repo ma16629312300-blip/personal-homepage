@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import BgmControl from './components/BgmControl.jsx';
 import CharacterStage from './components/CharacterStage.jsx';
+import DateDisplay from './components/DateDisplay.jsx';
 import StageContent from './components/StageContent.jsx';
 import StageMenu from './components/StageMenu.jsx';
 import StageShell from './components/StageShell.jsx';
@@ -9,7 +10,7 @@ import { allSections, sections } from './data/sections.js';
 
 const getSectionFromHash = () => {
   const hashId = window.location.hash.replace('#', '');
-  return allSections.some((section) => section.id === hashId) ? hashId : 'intro';
+  return allSections.some((s) => s.id === hashId) ? hashId : 'intro';
 };
 
 export default function App() {
@@ -17,8 +18,8 @@ export default function App() {
   const [wipeActive, setWipeActive] = useState(false);
 
   const activeSection = useMemo(
-    () => allSections.find((section) => section.id === activeId) ?? sections[0],
-    [activeId]
+    () => allSections.find((s) => s.id === activeId) ?? sections[0],
+    [activeId],
   );
   const menuActiveId = activeSection.parentId ?? activeSection.id;
 
@@ -37,17 +38,31 @@ export default function App() {
 
   useEffect(() => {
     if (!wipeActive) return undefined;
-    const timeout = window.setTimeout(() => setWipeActive(false), 620);
+    const timeout = window.setTimeout(() => setWipeActive(false), 640);
     return () => window.clearTimeout(timeout);
   }, [wipeActive, activeId]);
 
   return (
     <StageShell section={activeSection} wipeActive={wipeActive}>
-      <StageMenu sections={sections} activeId={menuActiveId} onSelect={handleSelect} />
+      {/* Left: Navigation menu */}
+      <StageMenu
+        sections={sections}
+        activeId={menuActiveId}
+        onSelect={handleSelect}
+      />
+
+      {/* Center: Content */}
       <StageContent section={activeSection} />
+
+      {/* Right: Original moon phase emblem */}
       <CharacterStage section={activeSection} />
-      <TransitionWipe active={wipeActive} section={activeSection} />
+
+      {/* UI widgets */}
+      <DateDisplay />
       <BgmControl />
+
+      {/* Transition overlay */}
+      <TransitionWipe active={wipeActive} section={activeSection} />
     </StageShell>
   );
 }
