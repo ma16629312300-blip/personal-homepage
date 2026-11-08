@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { tr } from '../lib/i18n.js';
 import { bgmTracks } from '../data/sections.js';
 import { useWorld } from '../lib/sky.js';
 import { useDarkHour } from '../lib/darkHour.js';
@@ -89,12 +90,12 @@ export default function BgmControl() {
         type="button"
         className="bgm-control__button"
         aria-pressed={enabled}
-        aria-label={enabled ? '静音背景音乐' : '播放背景音乐'}
+        aria-label={tr(enabled ? '静音背景音乐' : '播放背景音乐')}
         disabled={unavailable}
         onClick={toggleBgm}
       >
         <span>BGM</span>
-        <strong>{unavailable ? '不可用' : enabled ? 'ON' : 'OFF'}</strong>
+        <strong>{unavailable ? tr('不可用') : enabled ? 'ON' : 'OFF'}</strong>
       </button>
     </div>
   );

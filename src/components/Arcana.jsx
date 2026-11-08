@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { tr } from '../lib/i18n.js';
 import { useReducedMotion } from 'motion/react';
 import { images } from '../data/sections.js';
 import { ARCANA_IDS, bond, notice, useBond } from '../lib/bond.js';
@@ -21,8 +22,8 @@ export function HiddenCard({ section, hidden = false }) {
     bond(`arcana:${section.id}`);
     notice(
       have >= ARCANA_IDS.length
-        ? '五张牌集齐了。海面上……好像浮现了一扇门。'
-        : `找到了 ${section.arcana[0]} ${section.arcana[2]}　${have} / ${ARCANA_IDS.length}`,
+        ? tr('五张牌集齐了。海面上……好像浮现了一扇门。')
+        : `${tr('找到了')} ${section.arcana[0]} ${tr(section.arcana[2])}　${have} / ${ARCANA_IDS.length}`,
     );
     window.setTimeout(() => setTaking(false), reduce ? 0 : 1400);
   };
@@ -35,14 +36,14 @@ export function HiddenCard({ section, hidden = false }) {
       data-scrolled={hidden}
       onClick={take}
       onPointerEnter={() => sfx('hover')}
-      aria-label="藏在这里的塔罗牌"
+      aria-label={tr('藏在这里的塔罗牌')}
       disabled={taking}
     >
       <span className="hcard__inner">
         <span className="hcard__back" style={{ backgroundImage: `url(${images.cardBack})` }} />
         <span className="hcard__face" aria-hidden="true">
           <b>{section.arcana[0]}</b>
-          <i>{section.arcana[2]}</i>
+          <i>{tr(section.arcana[2])}</i>
         </span>
       </span>
     </button>
@@ -54,7 +55,7 @@ export function BlueDoor() {
   const state = useBond();
   if (state.cards.length < ARCANA_IDS.length) return null;
   return (
-    <a className="blue-door" href="#velvet" aria-label="推开天鹅绒之门" onPointerEnter={() => sfx('hover')}>
+    <a className="blue-door" href="#velvet" aria-label={tr('推开天鹅绒之门')} onPointerEnter={() => sfx('hover')}>
       <span className="blue-door__body">
         <img src={images.door} alt="" decoding="async" draggable="false" />
         <span className="blue-door__light" aria-hidden="true" />

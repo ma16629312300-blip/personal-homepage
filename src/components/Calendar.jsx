@@ -3,6 +3,7 @@ import { moonCycle, phaseName } from '../lib/moon.js';
 import { useDarkHour } from '../lib/darkHour.js';
 import { ARCANA_IDS, MAX_RANK, useBond } from '../lib/bond.js';
 import { FESTIVAL_NAMES, homeCycle, useWorld } from '../lib/sky.js';
+import { tr, useLang } from '../lib/i18n.js';
 
 /* P3 风格日历：月/日、星期、时段与今天真实的月相。日期变化时数字翻页。 */
 const WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -35,6 +36,7 @@ function MoonIcon({ p }) {
 }
 
 const WEATHER_ZH = { clear: '晴', rain: '雨', fog: '雾' };
+const WEATHER_EN = { clear: 'CLEAR', rain: 'RAIN', fog: 'FOG' };
 function WeatherIcon({ kind }) {
   return (
     <svg className="cal__wicon" viewBox="0 0 20 20" aria-hidden="true">
@@ -68,6 +70,7 @@ function WeatherIcon({ kind }) {
 export default function Calendar({ onRecord }) {
   const dark = useDarkHour();
   const bondState = useBond();
+  const en = useLang() === 'en';
   const { lunar, sky, skyForced, moonForced, dreaming, weather, festival } = useWorld();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -82,7 +85,10 @@ export default function Calendar({ onRecord }) {
   const [slotEn, slotZh] = dark.active ? ['DARK HOUR', '影时间'] : skyForced ? SKY_SLOT[sky] : slotOf(now.getHours());
   const p = dark.active ? 0.5 : moonForced ? homeCycle(now) : moonCycle(now);
   const [moonEn, moonZh] = dark.active ? ['FULL MOON', '满月'] : phaseName(p);
-  const label = `${now.getMonth() + 1}月${now.getDate()}日 星期${WEEK_ZH[day]}，${slotZh}，今日月相${moonZh}，天气${WEATHER_ZH[weather]}${festival !== 'none' ? `，今天是${FESTIVAL_NAMES[festival]}` : ''}；羁绊等级 ${bondState.rank}${bondState.cards.length ? `，已找到 ${bondState.cards.length} 张牌` : ''}`;
+  /* 距离下一次满月的天数（真实月相，满月当天不显示） */
+  const toFull = Math.ceil((((0.5 - moonCycle(now)) % 1) + 1) % 1 * 29.530588853);
+  const showCount = !dark.active && lunar !== 'full' && toFull > 0;
+  const label = `${now.getMonth() + 1}月${now.getDate()}日 星期${WEEK_ZH[day]}，${slotZh}，今日月相${moonZh}，天气${WEATHER_ZH[weather]}${festival !== 'none' ? `，今天是${FESTIVAL_NAMES[festival]}` : ''}${showCount ? `，距离满月还有 ${toFull} 天` : ''}；羁绊等级 ${bondState.rank}${bondState.cards.length ? `，已找到 ${bondState.cards.length} 张牌` : ''}`;
 
   return (
     <div className="cal">
@@ -92,25 +98,30 @@ export default function Calendar({ onRecord }) {
         <span className={`cal__week${day === 0 || day === 6 ? ' cal__week--rest' : ''}`}>{WEEK[day]}</span>
       </div>
       <div className="cal__slot" key={slotEn} aria-hidden="true">
-        <b>{slotZh}</b>
-        <span>{slotEn}</span>
-        {dreaming && !dark.active && <em className="cal__dream">梦境中</em>}
+        <b>{en ? slotEn : slotZh}</b>
+        {!en && <span>{slotEn}</span>}
+        {dreaming && !dark.active && <em className="cal__dream">{tr('梦境中')}</em>}
       </div>
       <div className="cal__phase" aria-hidden="true">
         <MoonIcon p={p} />
-        <span>{moonZh}</span>
-        <i>{moonEn}</i>
+        <span>{en ? moonEn : moonZh}</span>
+        {!en && <i>{moonEn}</i>}
         {!dark.active && (
           <span className="cal__weather" data-weather={weather}>
             <WeatherIcon kind={weather} />
-            {WEATHER_ZH[weather]}
+            {en ? WEATHER_EN[weather] : WEATHER_ZH[weather]}
           </span>
         )}
-        {!dark.active && festival !== 'none' && <em className="cal__event cal__event--fest">{FESTIVAL_NAMES[festival]}</em>}
-        {!dark.active && festival === 'none' && lunar === 'full' && <em className="cal__event">今夜满月</em>}
-        {!dark.active && festival === 'none' && lunar === 'new' && <em className="cal__event">月隐之夜</em>}
+        {!dark.active && festival !== 'none' && <em className="cal__event cal__event--fest">{tr(FESTIVAL_NAMES[festival])}</em>}
+        {!dark.active && festival === 'none' && lunar === 'full' && <em className="cal__event">{tr('今夜满月')}</em>}
+        {!dark.active && festival === 'none' && lunar === 'new' && <em className="cal__event">{tr('月隐之夜')}</em>}
       </div>
-      <button type="button" className="cal__bond" key={`r${bondState.rank}`} onClick={onRecord} aria-label="打开羁绊记录">
+      {showCount && (
+        <div className="cal__count" aria-hidden="true">
+          {en ? `FULL MOON IN ${toFull} DAY${toFull > 1 ? 'S' : ''}` : `距离满月还有 ${toFull} 天`}
+        </div>
+      )}
+      <button type="button" className="cal__bond" key={`r${bondState.rank}`} onClick={onRecord} aria-label={tr('打开羁绊记录')}>
         <span>COMMU</span>
         <b>RANK {bondState.rank === MAX_RANK ? 'MAX' : bondState.rank}</b>
         <span className="cal__pips" aria-hidden="true">

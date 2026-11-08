@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { tr } from '../lib/i18n.js';
 import { images } from '../data/sections.js';
 import { BOND_EVENTS, MAX_RANK, onNotice, onRankUp } from '../lib/bond.js';
 import { buzz, sfx } from '../lib/sfx.js';
@@ -23,7 +24,7 @@ export function RankUp() {
   return (
     <>
       <p className="visually-hidden" role="status">
-        {show ? `羁绊等级提升到 ${show.rank === MAX_RANK ? '最高级' : show.rank}` : ''}
+        {show ? `${tr('羁绊等级提升到')} ${show.rank === MAX_RANK ? tr('最高级') : show.rank}` : ''}
       </p>
       {show && (
         <div key={show.key} className="rankup" aria-hidden="true">
@@ -34,7 +35,7 @@ export function RankUp() {
             <strong className="rankup__title">{show.rank === MAX_RANK ? 'COMMU MAX!!' : 'COMMU RANK UP!!'}</strong>
             <span className="rankup__rank">
               RANK <b>{show.prev}</b> → <b>{show.rank === MAX_RANK ? 'MAX' : show.rank}</b>
-              <em>{show.why}</em>
+              <em>{tr(show.why)}</em>
             </span>
           </span>
           </div>
@@ -61,7 +62,7 @@ export function Notice() {
   }, []);
   return (
     <p className="notice" role="status">
-      {msg && <span key={msg.key}>{msg.text}</span>}
+      {msg && <span key={msg.key}>{tr(msg.text)}</span>}
     </p>
   );
 }

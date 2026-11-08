@@ -1717,3 +1717,56 @@ button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: un
 @media (prefers-reduced-motion: reduce) {
   .fog__band, .garland__bulb, .record { animation: none; }
 }
+
+/* 满月倒计时 */
+.cal__count { grid-column: 1 / -1; margin-top: 0.15rem; font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.12em; opacity: 0.8; }
+
+/* 中 / EN 切换 */
+.lang-toggle {
+  min-width: 2.6rem; padding: 0 0.6rem; border: 1.5px solid rgba(244, 245, 241, 0.75); background: rgba(2, 10, 50, 0.45); color: var(--ivory);
+  font-family: var(--font-display); font-style: italic; font-weight: 800; letter-spacing: 0.08em; cursor: pointer;
+}
+.lang-toggle:hover, .lang-toggle:focus-visible { background: var(--ivory); color: var(--cobalt-night); }
+
+/* 蝴蝶菜单里的环境音与拍照模式 */
+.dream-menu__extra { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.dream-menu__extra button {
+  flex: 1; padding: 0.35rem 0.6rem; border: 1px dashed rgba(244, 245, 241, 0.5); background: transparent; color: var(--ivory);
+  font: inherit; font-size: var(--fs-sm); letter-spacing: 0.08em; cursor: pointer;
+}
+.dream-menu__extra button[aria-pressed='true'] { border-style: solid; background: rgba(244, 245, 241, 0.16); }
+
+/* 拍照模式：只留场景 */
+.app[data-photo='true'] .layer--body, .app[data-photo='true'] .side-nav, .app[data-photo='true'] .cal,
+.app[data-photo='true'] .top-controls, .app[data-photo='true'] .dream, .app[data-photo='true'] .notice,
+.app[data-photo='true'] .rankup, .app[data-photo='true'] .free-time, .app[data-photo='true'] .summon-label {
+  opacity: 0 !important; pointer-events: none !important; transition: opacity 0.4s ease;
+}
+.photo-hint {
+  position: fixed; z-index: 60; left: 50%; bottom: 3vh; translate: -50% 0; margin: 0; padding: 0.4rem 1rem; pointer-events: none;
+  color: var(--ivory); background: rgba(2, 10, 50, 0.7); font-size: var(--fs-xs); letter-spacing: 0.2em;
+  animation: photo-hint 2.6s ease both;
+}
+@keyframes photo-hint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 第一次来访：对话与签名 */
+.guide { position: fixed; inset: 0; z-index: 56; display: grid; align-items: end; justify-items: center; padding: var(--gutter) var(--gutter) max(5vh, calc(var(--nav-h) + 1rem)); background: linear-gradient(to top, rgba(2, 8, 40, 0.75), rgba(2, 8, 40, 0.2) 60%); animation: velvet-fade 0.5s var(--ease-out) both; }
+.guide__panel { width: min(40rem, 100%); }
+.guide__panel .dlg { max-width: none; }
+.sign {
+  display: grid; gap: 0.5rem; padding: 1.4rem 1.6rem 1.2rem; color: var(--cobalt-night); background: var(--ivory);
+  border-radius: 4px 18px 4px 18px; box-shadow: 0.45rem 0.45rem 0 var(--coral);
+}
+.sign__kicker { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 800; letter-spacing: 0.3em; color: var(--cobalt); }
+.sign__label { font-family: var(--font-serif); font-weight: 900; letter-spacing: 0.3em; }
+.sign__input {
+  width: 100%; padding: 0.3rem 0.2rem; border: 0; border-bottom: 2px solid var(--cobalt-night); background: transparent; color: var(--cobalt-night);
+  font-family: var(--font-serif); font-weight: 700; font-size: 1.6rem; letter-spacing: 0.12em; outline: none;
+}
+.sign__input:focus { border-bottom-color: var(--coral); }
+.sign__note { margin: 0; font-size: var(--fs-xs); opacity: 0.7; }
+.sign__actions { display: flex; gap: 0.6rem; margin-top: 0.3rem; }
+.sign .btn:not(.btn--primary) { color: var(--cobalt-night); border-color: var(--cobalt-night); }
+@media (prefers-reduced-motion: reduce) { .guide, .photo-hint { animation: none; } }
+.sign .btn--primary { background: var(--cobalt-night); color: var(--ivory); border-color: var(--cobalt-night); }
+.sign .btn--primary:disabled { opacity: 0.4; }

@@ -12,7 +12,11 @@ import { STEP, mod } from './lib/ring.js';
 import { DarkHourContext } from './lib/darkHour.js';
 import { buzz, sfx } from './lib/sfx.js';
 import { ARCANA_IDS, bond, notice, useBond } from './lib/bond.js';
-import { FESTIVAL_NAMES, useWorld } from './lib/sky.js';
+import { FESTIVAL_NAMES, homeCycle, useWorld } from './lib/sky.js';
+import { drawFavicon } from './lib/tab.js';
+import { updateAmbient } from './lib/ambient.js';
+import { tr, useLang } from './lib/i18n.js';
+import Guide from './components/Guide.jsx';
 import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
 import Dream from './components/Dream.jsx';
@@ -39,6 +43,8 @@ export default function App() {
   const evokeTimer = useRef(0);
   const [touring, setTouring] = useState(false);
   const [record, setRecord] = useState(false);
+  const [photo, setPhoto] = useState(false);
+  const lang = useLang();
   const touringRef = useRef(false);
 
   /* 召唤：裂纹 → 卡牌碎裂 → 人格面具浮现并显示标签，数秒后退场（影时间里会一直留着） */
@@ -310,9 +316,64 @@ export default function App() {
     } catch {
       /* ignore */
     }
-    const id = window.setTimeout(() => notice(`今天是${FESTIVAL_NAMES[world.festival]}。`), 2400);
+    const id = window.setTimeout(() => notice(`${tr('今天是')}${tr(FESTIVAL_NAMES[world.festival])}${tr('。')}`), 2400);
     return () => window.clearTimeout(id);
   }, [world.festival]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* 标签页：图标是今天的月相，离开时标题挽留一下 */
+  useEffect(() => {
+    drawFavicon(dark ? 0.5 : homeCycle(world.now), dark);
+    const base = dark ? `${tr('影时间')} · tiaotiao` : 'tiaotiao';
+    document.title = base;
+    let back = 0;
+    const onVis = () => {
+      window.clearTimeout(back);
+      if (document.hidden) {
+        document.title = tr('……还会回来吗？');
+      } else {
+        document.title = tr('欢迎回来');
+        back = window.setTimeout(() => {
+          document.title = base;
+        }, 2200);
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.clearTimeout(back);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [world.now, dark, lang]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* 环境音跟着天气、页面与影时间变化 */
+  useEffect(() => {
+    updateAmbient({ rain: world.weather === 'rain' && !dark, train: settled === 'about' && !dark, dark });
+  }, [world.weather, settled, dark]);
+
+  /* 拍照模式：隐藏所有文字与按钮，只留场景。H 键或蝴蝶菜单进入，点击任意处、Esc 或 H 退出 */
+  useEffect(() => {
+    const toggle = () => setPhoto((v) => !v);
+    const onKey = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'h' || e.key === 'H') toggle();
+      else if (e.key === 'Escape') setPhoto(false);
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('tt:photo', toggle);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('tt:photo', toggle);
+    };
+  }, []);
+  useEffect(() => {
+    if (!photo) return undefined;
+    const off = () => setPhoto(false);
+    const id = window.setTimeout(() => window.addEventListener('pointerdown', off, { once: true }), 300);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener('pointerdown', off);
+    };
+  }, [photo]);
 
   /* 左右方向键切换相邻栏目 */
   useEffect(() => {
@@ -331,7 +392,7 @@ export default function App() {
 
   return (
     <DarkHourContext.Provider value={darkValue}>
-      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-velvet={velvetOpen} data-sky={world.sky} data-season={world.season} data-lunar={world.lunar} data-touring={touring} data-weather={world.weather} data-festival={world.festival}>
+      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-velvet={velvetOpen} data-sky={world.sky} data-season={world.season} data-lunar={world.lunar} data-touring={touring} data-weather={world.weather} data-festival={world.festival} data-photo={photo} lang={lang === 'en' ? 'en' : 'zh-CN'}>
         <Stage ring={ring} route={route} reduce={reduce} settled={settled === route.section ? settled : null} />
         <SideNav activeId={route.section} />
         <Calendar onRecord={() => setRecord(true)} />
@@ -340,7 +401,7 @@ export default function App() {
           {dark && (
             <button type="button" className="dark-exit" onClick={darkValue.exit}>
               <span>DARK HOUR</span>
-              <strong>离开影时间</strong>
+              <strong>{tr('离开影时间')}</strong>
             </button>
           )}
           <BgmControl />
@@ -349,18 +410,24 @@ export default function App() {
         {flash > 0 && <div key={flash} className="dark-flash" aria-hidden="true" />}
         {evoke > 0 && !reduce && <EvokeCrack key={`crack-${evoke}`} />}
         {summoned && <SummonLabel key={`label-${evoke}`} />}
-        <p className="visually-hidden" role="status">{summoned ? '已召唤人格面具 HOROLOGIUM' : ''}</p>
+        <p className="visually-hidden" role="status">{summoned ? tr('已召唤人格面具 HOROLOGIUM') : ''}</p>
         {summonCard > 0 && <Shatter key={`card-${summonCard}`} center item={null} onDone={() => setSummonCard(0)} />}
         {intro !== 'done' && <Intro onOpen={() => setIntro('rising')} onDone={() => setIntro('done')} />}
-        <p className="visually-hidden" role="status">{dark ? '已进入影时间，按 Esc 离开' : ''}</p>
+        <p className="visually-hidden" role="status">{dark ? tr('已进入影时间，按 Esc 离开') : ''}</p>
         {touring && (
           <div className="free-time" aria-hidden="true">
             <span className="free-time__en">FREE TIME</span>
-            <span className="free-time__zh">自由时间 · 动一下就会停下</span>
+            <span className="free-time__zh">{tr('自由时间 · 动一下就会停下')}</span>
           </div>
         )}
         {velvetOpen && <VelvetRoom onRecord={() => setRecord(true)} />}
         {record && <BondRecord onClose={() => setRecord(false)} />}
+        {intro === 'done' && <Guide />}
+        {photo && (
+          <p className="photo-hint" aria-live="polite">
+            {tr('拍照模式 · 点击任意处退出')}
+          </p>
+        )}
         <Notice />
         <RankUp />
       </div>

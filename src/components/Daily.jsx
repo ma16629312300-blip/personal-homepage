@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { tr } from '../lib/i18n.js';
 import { images, majorArcana, stats } from '../data/sections.js';
 import { bond } from '../lib/bond.js';
 import { useNow } from '../lib/sky.js';
@@ -64,7 +65,7 @@ export function DailyTarot() {
         data-flipping={flipping}
         onClick={draw}
         onPointerEnter={() => sfx('hover')}
-        aria-label={a ? `今日塔罗：${a[0]} ${a[2]}` : '抽一张今天的塔罗'}
+        aria-label={a ? `${tr('今日塔罗：')}${a[0]} ${tr(a[2])}` : tr('抽一张今天的塔罗')}
       >
         <span className="daily__inner">
           <span className="daily__back" style={{ backgroundImage: `url(${images.cardBack})` }}>
@@ -77,23 +78,23 @@ export function DailyTarot() {
                 <span className="daily__star" />
                 <span className="daily__name">
                   <b>{a[1]}</b>
-                  <i>{a[2]}</i>
+                  <i>{tr(a[2])}</i>
                 </span>
               </>
             )}
           </span>
         </span>
       </button>
-      <span className="pg-card__title">今日塔罗</span>
+      <span className="pg-card__title">{tr('今日塔罗')}</span>
       <span className="pg-card__teaser" aria-live="polite">
         {a ? (
           <>
-            <b className="daily__verdict">{a[2]}</b>
-            {a[3]}
-            <small className="daily__again">明天再来抽一张。</small>
+            <b className="daily__verdict">{tr(a[2])}</b>
+            {tr(a[3])}
+            <small className="daily__again">{tr('明天再来抽一张。')}</small>
           </>
         ) : (
-          '每天可以抽一张，看看今天的运势。'
+          tr('每天可以抽一张，看看今天的运势。')
         )}
       </span>
     </div>
@@ -105,13 +106,13 @@ export function Stats() {
   return (
     <section className="stats" aria-labelledby="stats-title">
       <h2 id="stats-title" className="stats__title">
-        PARAMETERS <span>人物参数</span>
+        PARAMETERS <span>{tr('人物参数')}</span>
       </h2>
       <ul className="stats__list">
         {stats.map((s, i) => (
           <li key={s.en} className="stat" style={{ '--i': i }}>
             <span className="stat__name">
-              <b>{s.zh}</b>
+              <b>{tr(s.zh)}</b>
               <i>{s.en}</i>
             </span>
             <span className="stat__bar" aria-hidden="true">
@@ -120,7 +121,7 @@ export function Stats() {
               ))}
             </span>
             <span className="stat__lv">{s.lv >= 6 ? 'MAX' : `Lv.${s.lv}`}</span>
-            <span className="stat__note">「{s.note}」</span>
+            <span className="stat__note">「{tr(s.note)}」</span>
           </li>
         ))}
       </ul>

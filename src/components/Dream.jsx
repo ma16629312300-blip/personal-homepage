@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { tr, useLang } from '../lib/i18n.js';
+import { ambientOn, setAmbient } from '../lib/ambient.js';
 import { X } from 'lucide-react';
 import { randomDream, setDream, useDream } from '../lib/sky.js';
 import { bond } from '../lib/bond.js';
@@ -32,6 +34,8 @@ export function ButterflyIcon() {
 
 export default function Dream() {
   const dream = useDream();
+  useLang();
+  const [amb, setAmb] = useState(ambientOn);
   const [open, setOpen] = useState(false);
   const root = useRef(null);
   const dreaming = Object.keys(dream).length > 0;
@@ -69,7 +73,7 @@ export default function Dream() {
         data-dreaming={dreaming}
         aria-expanded={open}
         aria-controls="dream-menu"
-        aria-label="蓝蝶：改变天空、季节、月相、天气与节日"
+        aria-label={tr('蓝蝶：改变天空、季节、月相、天气与节日')}
         onClick={() => {
           sfx(open ? 'hover' : 'select');
           setOpen(!open);
@@ -82,25 +86,25 @@ export default function Dream() {
         <div className="dream-menu" id="dream-menu" role="group" aria-labelledby="dream-title">
           <header className="dream-menu__head">
             <h2 id="dream-title">
-              BUTTERFLY DREAM <span>蝴蝶之梦</span>
+              BUTTERFLY DREAM <span>{tr('蝴蝶之梦')}</span>
             </h2>
-            <button type="button" className="dream-menu__close" aria-label="收起" onClick={() => setOpen(false)}>
+            <button type="button" className="dream-menu__close" aria-label={tr('收起')} onClick={() => setOpen(false)}>
               <X size={16} aria-hidden="true" />
             </button>
           </header>
           {ROWS.map((row) => (
-            <div key={row.key} className="dream-row" role="group" aria-label={row.zh}>
+            <div key={row.key} className="dream-row" role="group" aria-label={tr(row.zh)}>
               <span className="dream-row__label">
-                <b>{row.zh}</b>
+                <b>{tr(row.zh)}</b>
                 <i>{row.en}</i>
               </span>
               <span className="dream-row__opts">
                 <button type="button" aria-pressed={!dream[row.key]} onClick={() => choose(row.key, 'auto')}>
-                  现实
+                  {tr('现实')}
                 </button>
                 {row.options.map(([value, label]) => (
                   <button key={value} type="button" aria-pressed={dream[row.key] === value} onClick={() => choose(row.key, value)}>
-                    {label}
+                    {tr(label)}
                   </button>
                 ))}
               </span>
@@ -116,7 +120,7 @@ export default function Dream() {
                 bond('dream');
               }}
             >
-              随机做个梦
+              {tr('随机做个梦')}
             </button>
             <button
               type="button"
@@ -127,14 +131,36 @@ export default function Dream() {
                 setDream(null);
               }}
             >
-              还原现实
+              {tr('还原现实')}
             </button>
           </div>
-          <p className="dream-menu__note">只在这个页面里有效，关掉就会醒来。</p>
+          <div className="dream-menu__extra">
+            <button
+              type="button"
+              aria-pressed={amb}
+              onClick={() => {
+                setAmbient(!amb);
+                setAmb(!amb);
+                sfx('select');
+              }}
+            >
+              {tr('环境音')} {amb ? 'ON' : 'OFF'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                window.dispatchEvent(new Event('tt:photo'));
+              }}
+            >
+              {tr('拍照模式')}
+            </button>
+          </div>
+          <p className="dream-menu__note">{tr('只在这个页面里有效，关掉就会醒来。')}</p>
         </div>
       )}
       <p className="visually-hidden" role="status">
-        {dreaming ? '正在蝴蝶之梦里，天空不是现实的时间' : ''}
+        {dreaming ? tr('正在蝴蝶之梦里，天空不是现实的时间') : ''}
       </p>
     </div>
   );

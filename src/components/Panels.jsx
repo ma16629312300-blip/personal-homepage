@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowLeft, ArrowUpRight, Copy, Download, Mail } from 'lucide-react';
 import { email, images, playgroundItems } from '../data/sections.js';
@@ -9,6 +9,8 @@ import { sfx } from '../lib/sfx.js';
 import { bond } from '../lib/bond.js';
 import { BlueDoor, HiddenCard } from './Arcana.jsx';
 import { DailyTarot, Stats } from './Daily.jsx';
+import { useName } from '../lib/name.js';
+import { tr } from '../lib/i18n.js';
 
 function Heading({ section, children }) {
   return (
@@ -16,10 +18,10 @@ function Heading({ section, children }) {
       <p className="panel-head__kicker">
         <span>{section.number}</span>
         <span>{section.label}</span>
-        <span className="arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{section.arcana[2]}</i></span>
+        <span className="arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{tr(section.arcana[2])}</i></span>
       </p>
       <h1 id={`heading-${section.id}`} tabIndex={-1} className="panel-head__title">
-        <span className="reveal">{section.title}</span>
+        <span className="reveal">{tr(section.title)}</span>
       </h1>
       {children}
     </header>
@@ -33,18 +35,18 @@ function Home({ section }) {
       <button
         type="button"
         className="clock-hit"
-        aria-label={dark.active ? '已在影时间' : '把时钟拨到零点'}
+        aria-label={tr(dark.active ? '已在影时间' : '把时钟拨到零点')}
         onClick={dark.active ? dark.exit : dark.enter}
       >
-        <span className="clock-hit__hint" aria-hidden="true">{dark.active ? '离开影时间' : '拨到零点？'}</span>
+        <span className="clock-hit__hint" aria-hidden="true">{tr(dark.active ? '离开影时间' : '拨到零点？')}</span>
       </button>
       <h1 id={`heading-${section.id}`} tabIndex={-1} className="visually-hidden">
-        tiaotiao 的个人空间
+        {tr('tiaotiao 的个人空间')}
       </h1>
       <p className="home-line">
-        <span className="reveal">河北工业大学北辰最忧郁之人</span>
+        <span className="reveal">{tr('河北工业大学北辰最忧郁之人')}</span>
       </p>
-      <p className="home-arcana arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{section.arcana[2]}</i></p>
+      <p className="home-arcana arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{tr(section.arcana[2])}</i></p>
     </div>
   );
 }
@@ -63,22 +65,25 @@ const ABOUT_CHOICES = [
 ];
 
 function About({ section, active }) {
+  const name = useName();
+  const lines = useMemo(() => (name ? ['……啊，{name}，你来了。我是 tiaotiao。', ...ABOUT_LINES.slice(1)] : ABOUT_LINES), [name]);
   return (
     <div className="content content--about">
       <Heading section={section} />
       <div className="about-body">
         <Dialogue
           name="tiaotiao"
-          lines={ABOUT_LINES}
+          lines={lines}
+          vars={{ name: name || '' }}
           choices={ABOUT_CHOICES}
           active={active}
           avatar={images.portrait}
           onDone={() => bond('dialogue:about')}
         />
-        <ul className="about-tags" aria-label="关键词">
-          <li>河北工业大学</li>
-          <li>游戏 UI</li>
-          <li>交互实验</li>
+        <ul className="about-tags" aria-label={tr('关键词')}>
+          <li>{tr('河北工业大学')}</li>
+          <li>{tr('游戏 UI')}</li>
+          <li>{tr('交互实验')}</li>
         </ul>
         <Stats />
       </div>
@@ -91,8 +96,8 @@ function Projects({ section }) {
     <div className="content content--projects">
       <Heading section={section} />
       <div className="empty-state">
-        <p className="empty-state__title">暂无公开项目</p>
-        <p className="empty-state__text">正式项目整理好之后会放在这里。</p>
+        <p className="empty-state__title">{tr('暂无公开项目')}</p>
+        <p className="empty-state__text">{tr('正式项目整理好之后会放在这里。')}</p>
       </div>
     </div>
   );
@@ -141,8 +146,8 @@ function Playground({ section, route, active }) {
                 <span className="card">
                   <CardFace item={item} />
                 </span>
-                <span className="pg-card__title">{item.title}</span>
-                <span className="pg-card__teaser">{item.teaser}</span>
+                <span className="pg-card__title">{tr(item.title)}</span>
+                <span className="pg-card__teaser">{tr(item.teaser)}</span>
               </a>
             </li>
           ))}
@@ -183,7 +188,7 @@ function Playground({ section, route, active }) {
           >
             <a className="pg-back" href="#playground">
               <ArrowLeft aria-hidden="true" size={18} />
-              返回有趣功能
+              {tr('返回有趣功能')}
             </a>
             <p className="panel-head__kicker">
               <span>{detail.number}</span>
@@ -192,14 +197,14 @@ function Playground({ section, route, active }) {
             <p className="pg-detail__arcana">
               <b>{detail.arcana[0]}</b>
               <span>{detail.arcana[1]}</span>
-              <i>{detail.arcana[2]}</i>
+              <i>{tr(detail.arcana[2])}</i>
             </p>
             <h2 id={`detail-${detail.id}`} tabIndex={-1} className="pg-detail__title">
-              {detail.title}
+              {tr(detail.title)}
             </h2>
-            <p className="pg-detail__author">作者 tiaotiao</p>
-            <p className="pg-detail__copy">{detail.copy}</p>
-            {detail.note && <p className="pg-detail__note">{detail.note}</p>}
+            <p className="pg-detail__author">{tr('作者 tiaotiao')}</p>
+            <p className="pg-detail__copy">{tr(detail.copy)}</p>
+            {detail.note && <p className="pg-detail__note">{tr(detail.note)}</p>}
             <div className="pg-actions">
               {detail.links.map((l) => (
                 <a
@@ -211,8 +216,8 @@ function Playground({ section, route, active }) {
                     : { target: '_blank', rel: 'noreferrer' })}
                 >
                   {l.download ? <Download aria-hidden="true" size={18} /> : <ArrowUpRight aria-hidden="true" size={18} />}
-                  <span>{l.label}</span>
-                  {l.sub && <small>{l.sub}</small>}
+                  <span>{tr(l.label)}</span>
+                  {l.sub && <small>{tr(l.sub)}</small>}
                 </a>
               ))}
             </div>
@@ -259,15 +264,15 @@ function Contact({ section, active }) {
       <div className="contact-actions">
         <a className="btn btn--primary" href={`mailto:${email}`} onClick={() => bond('mail')}>
           <Mail aria-hidden="true" size={18} />
-          <span>发邮件</span>
+          <span>{tr('发邮件')}</span>
         </a>
         <button type="button" className="btn" onClick={copy}>
           <Copy aria-hidden="true" size={18} />
-          <span>{copied === 'ok' ? '已复制' : '复制邮箱'}</span>
+          <span>{tr(copied === 'ok' ? '已复制' : '复制邮箱')}</span>
         </button>
       </div>
       <p className="contact-status" role="status">
-        {copied === 'ok' ? '邮箱已复制到剪贴板' : copied === 'fail' ? '复制失败，请手动选择邮箱地址' : ''}
+        {copied === 'ok' ? tr('邮箱已复制到剪贴板') : copied === 'fail' ? tr('复制失败，请手动选择邮箱地址') : ''}
       </p>
     </div>
   );

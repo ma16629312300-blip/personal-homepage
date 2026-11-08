@@ -209,4 +209,13 @@ describe('tiaotiao 个人空间', () => {
     'persona'.split('').forEach((key) => fireEvent.keyDown(window, { key }));
     expect(screen.getByText('已召唤人格面具 HOROLOGIUM')).toBeInTheDocument();
   });
+
+  it('按 H 进入拍照模式，再按一次退出', () => {
+    render(<App />);
+    const app = document.querySelector('.app');
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(app.dataset.photo).toBe('true');
+    fireEvent.keyDown(window, { key: 'h' });
+    expect(app.dataset.photo).toBe('false');
+  });
 });

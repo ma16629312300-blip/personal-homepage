@@ -5,6 +5,8 @@ import { images, sections } from '../data/sections.js';
 import { bond } from '../lib/bond.js';
 import { sfx } from '../lib/sfx.js';
 import Dialogue from './Dialogue.jsx';
+import { useName } from '../lib/name.js';
+import { tr, useLang } from '../lib/i18n.js';
 
 /* 天鹅绒房间：集齐五张牌后从蓝门进入。房间缓缓下降，五张牌浮在圆桌上方，
    点牌听它的含义。全部是原创场景与台词。 */
@@ -51,8 +53,13 @@ export default function VelvetRoom({ onRecord }) {
     };
   }, [reduce]);
 
+  const name = useName();
+  useLang();
   const picked = sections.find((s) => s.id === pick);
-  const lines = useMemo(() => (picked ? [CARD_LINES[picked.id]] : LINES), [picked]);
+  const lines = useMemo(
+    () => (picked ? [CARD_LINES[picked.id]] : name ? ['……欢迎，{name}。没想到你真的找到了这扇门。', ...LINES.slice(1)] : LINES),
+    [picked, name],
+  );
   const choices = picked
     ? [{ label: '放回桌上', onClick: () => setPick(null) }]
     : [
@@ -84,7 +91,7 @@ export default function VelvetRoom({ onRecord }) {
                 <span className="vcard__plate">
                   <b>{s.arcana[0]}</b>
                   <span>{s.arcana[1]}</span>
-                  <i>{s.arcana[2]}</i>
+                  <i>{tr(s.arcana[2])}</i>
                 </span>
               </button>
             </li>
@@ -94,19 +101,19 @@ export default function VelvetRoom({ onRecord }) {
       <div className="velvet__veil" aria-hidden="true" />
       <header className="velvet__title">
         <h2 id="velvet-title">
-          VELVET ROOM <span>天鹅绒房间</span>
+          VELVET ROOM <span>{tr('天鹅绒房间')}</span>
         </h2>
-        <p>梦与现实、精神与物质的夹缝</p>
+        <p>{tr('梦与现实、精神与物质的夹缝')}</p>
       </header>
       <button type="button" className="velvet__record" onClick={onRecord} onPointerEnter={() => sfx('hover')}>
-        羁绊记录
+        {tr('羁绊记录')}
       </button>
       <a className="velvet__exit" href="#home" onPointerEnter={() => sfx('hover')}>
         <X aria-hidden="true" size={18} />
-        <span>离开房间</span>
+        <span>{tr('离开房间')}</span>
       </a>
       <div className="velvet__dlg">
-        <Dialogue name="tiaotiao" lines={lines} choices={choices} active avatar={images.portrait} />
+        <Dialogue name="tiaotiao" lines={lines} vars={{ name: name || '' }} choices={choices} active avatar={images.portrait} />
       </div>
     </div>
   );
