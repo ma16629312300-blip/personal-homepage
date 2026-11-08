@@ -1388,7 +1388,7 @@ button { font: inherit; color: inherit; }
 
 /* 星空：晴夜淡淡的星，新月之夜最亮 */
 .sea__sky::after {
-  content: ''; position: absolute; left: 0; right: 0; top: 0; height: var(--sea-line); pointer-events: none; opacity: 0;
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: var(--sea-line); pointer-events: none; --star-a: 0; opacity: var(--star-a);
   background-image:
     radial-gradient(1.2px 1.2px at 8% 14%, #fff, transparent), radial-gradient(1px 1px at 17% 32%, #fff, transparent),
     radial-gradient(1.4px 1.4px at 26% 9%, #fff, transparent), radial-gradient(1px 1px at 34% 41%, #fff, transparent),
@@ -1401,10 +1401,10 @@ button { font: inherit; color: inherit; }
     radial-gradient(1px 1px at 92% 50%, #fff, transparent), radial-gradient(1.2px 1.2px at 38% 3%, #fff, transparent);
   transition: opacity 2.4s ease; animation: twinkle 6s ease-in-out infinite alternate;
 }
-@keyframes twinkle { from { filter: brightness(0.8); } to { filter: brightness(1.3); } }
-.app[data-sky='night'] .sea__sky::after { opacity: 0.35; }
-.app[data-sky='dawn'] .sea__sky::after { opacity: 0.12; }
-.app[data-sky='night'][data-lunar='new'] .sea__sky::after { opacity: 0.95; }
+@keyframes twinkle { from { opacity: var(--star-a); } to { opacity: calc(var(--star-a) * 0.6); } }
+.app[data-sky='night'] .sea__sky::after { --star-a: 0.35; }
+.app[data-sky='dawn'] .sea__sky::after { --star-a: 0.12; }
+.app[data-sky='night'][data-lunar='new'] .sea__sky::after { --star-a: 0.95; }
 .app[data-dark-hour='true'] .sea__sky::after { opacity: 0 !important; }
 
 /* 满月夜：月光更亮、倒影更强；新月夜：海面只剩微光 */
@@ -1665,7 +1665,7 @@ button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: un
   transform: rotate(-24deg); transition: opacity 2s ease;
 }
 .app[data-festival='qixi']:not([data-dark-hour='true']) .sea__sky::before { opacity: 1; }
-.app[data-festival='qixi']:not([data-dark-hour='true']) .sea__sky::after { opacity: 0.9; }
+.app[data-festival='qixi']:not([data-dark-hour='true']) .sea__sky::after { --star-a: 0.9; }
 /* 中秋：月亮额外明亮 */
 .app[data-festival='midautumn']:not([data-dark-hour='true']) .moon .emblem { filter: drop-shadow(0 0 4vh rgba(255, 236, 190, 0.75)); }
 .app[data-festival='midautumn']:not([data-dark-hour='true']) .glitter__field { filter: brightness(1.5) sepia(0.25); }

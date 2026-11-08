@@ -19,10 +19,21 @@ export function onBeat(fn) {
 
 /* 写入的是相对变化：低频超出近期平均越多，数值越大，这样安静段落和鼓点的对比更明显 */
 const clamp = (v) => Math.min(1, Math.max(0, v));
+/* 只写到海面与月亮两个元素上：写在根元素上会让整页每帧重新计算样式，手机上很卡 */
+let targets = [];
+let lastB = '';
+let lastL = '';
 function write() {
-  const root = document.documentElement.style;
-  root.setProperty('--pulse-bass', clamp((bass - avg) * 3.2 + bass * 0.25).toFixed(3));
-  root.setProperty('--pulse-level', clamp(level).toFixed(3));
+  const b = clamp((bass - avg) * 3.2 + bass * 0.25).toFixed(2);
+  const l = clamp(level).toFixed(2);
+  if (b === lastB && l === lastL) return;
+  lastB = b;
+  lastL = l;
+  if (!targets.length || !targets[0].isConnected) targets = [...document.querySelectorAll('.sea, .moon')];
+  targets.forEach((el) => {
+    el.style.setProperty('--pulse-bass', b);
+    el.style.setProperty('--pulse-level', l);
+  });
 }
 
 function loop(now) {

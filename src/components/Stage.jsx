@@ -26,7 +26,11 @@ const LAYERS = {
 function useLayer(rel, px, py, name) {
   const { d, spin, par, tilt } = LAYERS[name];
   return useTransform([rel, px, py], ([r, x, y]) => {
-    if (geom.mobile) return orbit(r, d, spin, x * par * 0.7, y * par * 0.35, x * 1.4 * tilt, -y * 0.9 * tilt);
+    /* 手机：陀螺仪视差只作用在停稳的当前页，转场途中和其他页保持静态，省掉大量每帧计算 */
+    if (geom.mobile) {
+      if (Math.abs(r) > 0.5) return orbit(r, d, spin);
+      return orbit(r, d, spin, x * par * 0.7, y * par * 0.35, x * 1.4 * tilt, -y * 0.9 * tilt);
+    }
     return orbit(r, d, spin, x * par, y * par * 0.5, x * 2.4 * tilt, -y * 1.6 * tilt);
   });
 }
@@ -123,6 +127,8 @@ export default function Stage({ ring, route, reduce, settled }) {
   /* 镜头：转向途中画面轻微侧倾并拉远，停下时回正；转得越快，人物与大字越模糊 */
   const velocity = useVelocity(ring);
   const blur = useTransform(velocity, (v) => {
+    /* 手机上不做动态模糊：大图实时模糊是转场卡顿的主要来源 */
+    if (geom.mobile) return 'none';
     const b = Math.min(3.2, Math.abs(v) / 70);
     return b < 0.15 ? 'none' : `blur(${b.toFixed(2)}px)`;
   });
@@ -187,8 +193,11 @@ export default function Stage({ ring, route, reduce, settled }) {
       if (!base) base = { x: gx, y: gy };
       base.x += (gx - base.x) * 0.004;
       base.y += (gy - base.y) * 0.004;
-      pointerX.set(clamp((gx - base.x) / 16));
-      pointerY.set(clamp((gy - base.y) / 16));
+      const nx = clamp((gx - base.x) / 16);
+      const ny = clamp((gy - base.y) / 16);
+      /* 很小的抖动不更新，避免手机静止时也每帧重算 */
+      if (Math.abs(nx - pointerX.get()) > 0.015) pointerX.set(nx);
+      if (Math.abs(ny - pointerY.get()) > 0.015) pointerY.set(ny);
     };
     const attach = () => window.addEventListener('deviceorientation', onOri);
     let ask = null;

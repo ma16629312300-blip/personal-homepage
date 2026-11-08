@@ -9,7 +9,8 @@ export default function Petals() {
   const { season } = useWorld();
   const items = useMemo(
     () =>
-      Array.from({ length: COUNT[season] }, (_, i) => ({
+      /* 手机上数量减半，减轻转场时的负担 */
+      Array.from({ length: Math.round(COUNT[season] * (window.matchMedia('(max-width: 760px), (max-width: 1100px) and (orientation: portrait)').matches ? 0.55 : 1)) }, (_, i) => ({
         x: season === 'spring' || season === 'autumn' ? 30 + Math.random() * 75 : Math.random() * 100,
         y: 40 + Math.random() * 55,
         s: season === 'winter' ? 3 + Math.random() * 5 : season === 'summer' ? 3 + Math.random() * 3 : 8 + Math.random() * 9,
