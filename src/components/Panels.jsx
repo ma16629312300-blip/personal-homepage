@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowLeft, ArrowUpRight, Copy, Download, Mail } from 'lucide-react';
-import { email, playgroundItems } from '../data/sections.js';
+import { email, images, playgroundItems } from '../data/sections.js';
 import { CardFace, Shatter } from './Tarot.jsx';
 import Dialogue from './Dialogue.jsx';
 import { useDarkHour } from '../lib/darkHour.js';
 import { sfx } from '../lib/sfx.js';
+import { bond } from '../lib/bond.js';
+import { BlueDoor, HiddenCard } from './Arcana.jsx';
 
 function Heading({ section, children }) {
   return (
@@ -64,7 +66,14 @@ function About({ section, active }) {
     <div className="content content--about">
       <Heading section={section} />
       <div className="about-body">
-        <Dialogue name="tiaotiao" lines={ABOUT_LINES} choices={ABOUT_CHOICES} active={active} />
+        <Dialogue
+          name="tiaotiao"
+          lines={ABOUT_LINES}
+          choices={ABOUT_CHOICES}
+          active={active}
+          avatar={images.portrait}
+          onDone={() => bond('dialogue:about')}
+        />
         <ul className="about-tags" aria-label="关键词">
           <li>河北工业大学</li>
           <li>游戏 UI</li>
@@ -106,7 +115,10 @@ function Playground({ section, route, active }) {
 
   useEffect(() => {
     if (listRef.current) listRef.current.inert = Boolean(detail);
-    if (detail) lastOpened.current = detail.id;
+    if (detail) {
+      lastOpened.current = detail.id;
+      bond(`card:${detail.id}`);
+    }
   }, [detail]);
 
   return (
@@ -213,6 +225,7 @@ function Contact({ section, active }) {
   const timer = useRef(0);
   useEffect(() => () => window.clearTimeout(timer.current), []);
   const copy = async () => {
+    bond('mail');
     try {
       await navigator.clipboard.writeText(email);
       setCopied('ok');
@@ -229,15 +242,17 @@ function Contact({ section, active }) {
         name="tiaotiao"
         lines={CONTACT_LINES}
         active={active}
+        avatar={images.portrait}
+        onDone={() => bond('dialogue:contact')}
         choices={[
-          { label: '发邮件', href: `mailto:${email}` },
+          { label: '发邮件', href: `mailto:${email}`, onClick: () => bond('mail') },
           { label: '复制邮箱', onClick: () => copy() },
           { label: '下次再说', href: '#home' },
         ]}
       />
       <p className="contact-email">{email}</p>
       <div className="contact-actions">
-        <a className="btn btn--primary" href={`mailto:${email}`}>
+        <a className="btn btn--primary" href={`mailto:${email}`} onClick={() => bond('mail')}>
           <Mail aria-hidden="true" size={18} />
           <span>发邮件</span>
         </a>
@@ -258,8 +273,12 @@ const MAP = { home: Home, about: About, projects: Projects, playground: Playgrou
 export function PanelContent({ section, route, active }) {
   const C = MAP[section.id];
   return (
-    <div className="scroller">
-      <C section={section} route={route} active={active} />
-    </div>
+    <>
+      <div className="scroller">
+        <C section={section} route={route} active={active} />
+      </div>
+      {section.id === 'home' && <BlueDoor />}
+      <HiddenCard section={section} />
+    </>
   );
 }

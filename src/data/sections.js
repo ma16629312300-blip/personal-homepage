@@ -17,6 +17,9 @@ export const images = {
   carriage: asset('carriage'),
   sakura: asset('sakura-branch'),
   school: asset('school-hill'),
+  portrait: asset('portrait'),
+  velvet: asset('velvet-room'),
+  door: asset('blue-door'),
 };
 
 /* 主栏目：顺序即环形轨道上的站位，每站相隔 72° */
@@ -111,6 +114,7 @@ const aliases = { intro: 'home', profile: 'about', works: 'projects' };
 export function parseHash(hash) {
   const raw = decodeURIComponent((hash || '').replace(/^#\/?/, ''));
   const id = aliases[raw] ?? raw;
+  if (id === 'velvet') return { section: 'home', detail: null, velvet: true };
   const item = playgroundItems.find((p) => p.id === id);
   if (item) return { section: 'playground', detail: item.id };
   if (sections.some((s) => s.id === id)) return { section: id, detail: null };

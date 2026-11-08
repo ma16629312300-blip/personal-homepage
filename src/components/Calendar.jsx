@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { moonCycle, phaseName } from '../lib/moon.js';
 import { useDarkHour } from '../lib/darkHour.js';
+import { ARCANA_IDS, MAX_RANK, useBond } from '../lib/bond.js';
 
 /* P3 风格日历：月/日、星期、时段与今天真实的月相。日期变化时数字翻页。 */
 const WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -34,6 +35,7 @@ function MoonIcon({ p }) {
 
 export default function Calendar() {
   const dark = useDarkHour();
+  const bondState = useBond();
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 30000);
@@ -46,7 +48,7 @@ export default function Calendar() {
   const [slotEn, slotZh] = dark.active ? ['DARK HOUR', '影时间'] : slotOf(now.getHours());
   const p = dark.active ? 0.5 : moonCycle(now);
   const [moonEn, moonZh] = dark.active ? ['FULL MOON', '满月'] : phaseName(p);
-  const label = `${now.getMonth() + 1}月${now.getDate()}日 星期${WEEK_ZH[day]}，${slotZh}，今日月相${moonZh}`;
+  const label = `${now.getMonth() + 1}月${now.getDate()}日 星期${WEEK_ZH[day]}，${slotZh}，今日月相${moonZh}；羁绊等级 ${bondState.rank}${bondState.cards.length ? `，已找到 ${bondState.cards.length} 张牌` : ''}`;
 
   return (
     <div className="cal" role="img" aria-label={label}>
@@ -62,6 +64,20 @@ export default function Calendar() {
         <MoonIcon p={p} />
         <span>{moonZh}</span>
         <i>{moonEn}</i>
+      </div>
+      <div className="cal__bond" key={`r${bondState.rank}`}>
+        <span>COMMU</span>
+        <b>RANK {bondState.rank === MAX_RANK ? 'MAX' : bondState.rank}</b>
+        <span className="cal__pips" aria-hidden="true">
+          {Array.from({ length: MAX_RANK }, (_, i) => (
+            <i key={i} data-on={i < bondState.rank} />
+          ))}
+        </span>
+        {bondState.cards.length > 0 && (
+          <em>
+            ✦ {bondState.cards.length}/{ARCANA_IDS.length}
+          </em>
+        )}
       </div>
     </div>
   );

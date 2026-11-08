@@ -85,6 +85,22 @@ const SOUNDS = {
     }
     tone(a, { type: 'sine', from: 90, to: 42, dur: 0.9, gain: 0.12, delay: 0.05 });
   },
+  /* 羁绊升级：上行的琶音加一声亮音 */
+  rankUp(a) {
+    [523, 659, 784, 1047].forEach((f, i) => tone(a, { type: 'triangle', from: f, dur: 0.22, gain: 0.045, delay: i * 0.07 }));
+    tone(a, { type: 'sine', from: 2093, dur: 0.6, gain: 0.03, delay: 0.3 });
+  },
+  /* 找到卡牌：一声轻的翻牌加闪光 */
+  card(a) {
+    noise(a, { dur: 0.12, from: 2500, to: 5000, q: 0.8, gain: 0.04, type: 'highpass' });
+    tone(a, { type: 'sine', from: 1568, to: 1760, dur: 0.3, gain: 0.04, delay: 0.06 });
+  },
+  /* 开门：低沉的门轴声与上行的风 */
+  door(a) {
+    tone(a, { type: 'sawtooth', from: 70, to: 110, dur: 0.9, gain: 0.025 });
+    noise(a, { dur: 1.6, from: 200, to: 3200, q: 0.7, gain: 0.05, delay: 0.2 });
+    tone(a, { type: 'sine', from: 330, to: 660, dur: 1.4, gain: 0.03, delay: 0.5 });
+  },
   /* 影时间：一记钟响后接持续的低鸣 */
   darkHour(a) {
     tone(a, { type: 'sine', from: 196, to: 194, dur: 2.4, gain: 0.08 });

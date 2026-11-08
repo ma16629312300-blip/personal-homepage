@@ -4,7 +4,7 @@ import { sfx } from '../lib/sfx.js';
 
 /* P3 风格对话框：名字牌、逐字打出、点击或空格翻页、▼ 提示、跳过，最后给出选择支。
    逐字的文字对读屏软件隐藏，另附一份完整台词，保证内容可读。 */
-export default function Dialogue({ name, lines, choices, active }) {
+export default function Dialogue({ name, lines, choices, active, avatar, onDone }) {
   const reduce = useReducedMotion();
   const [idx, setIdx] = useState(0);
   const [chars, setChars] = useState(0);
@@ -42,6 +42,7 @@ export default function Dialogue({ name, lines, choices, active }) {
     } else if (!done) {
       sfx('select');
       setDone(true);
+      onDone?.();
     }
   };
 
@@ -49,6 +50,7 @@ export default function Dialogue({ name, lines, choices, active }) {
     setIdx(lines.length - 1);
     setChars(lines[lines.length - 1].length);
     setDone(true);
+    onDone?.();
   };
 
   const restart = () => {
@@ -59,9 +61,10 @@ export default function Dialogue({ name, lines, choices, active }) {
   };
 
   return (
-    <div className="dlg" data-done={done}>
+    <div className="dlg" data-done={done} data-avatar={Boolean(avatar)}>
       <p className="visually-hidden">{lines.join(' ')}</p>
       <button ref={box} type="button" className="dlg__box" onClick={advance} aria-label={done ? '对话已结束' : typing ? '显示整句' : '下一句'}>
+        {avatar && <img className="dlg__avatar" src={avatar} alt="" decoding="async" draggable="false" />}
         <span className="dlg__name">{name}</span>
         <span className="dlg__text" aria-hidden="true">
           {line.slice(0, chars)}
@@ -80,7 +83,7 @@ export default function Dialogue({ name, lines, choices, active }) {
           {choices.map((c) => (
             <li key={c.label}>
               {c.href ? (
-                <a className="dlg__choice" href={c.href} {...(c.external ? { target: '_blank', rel: 'noreferrer' } : {})} onPointerEnter={() => sfx('hover')}>
+                <a className="dlg__choice" href={c.href} onClick={c.onClick} {...(c.external ? { target: '_blank', rel: 'noreferrer' } : {})} onPointerEnter={() => sfx('hover')}>
                   {c.label}
                 </a>
               ) : (

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { setSfxEnabled } from '../lib/sfx.js';
 import { connectPulse, setPulsePlaying } from '../lib/pulse.js';
+import { bond } from '../lib/bond.js';
 
 const bgmSrc = `${import.meta.env.BASE_URL}audio/color-your-night.mp3`;
 
@@ -30,6 +31,7 @@ export default function BgmControl() {
       setEnabled(true);
       setSfxEnabled(true);
       setPulsePlaying(true);
+      bond('bgm');
     } catch (error) {
       /* 浏览器拦截自动播放时只是没播成，不代表音乐坏了，下次点击还能再试 */
       if (error?.name !== 'NotAllowedError' && error?.name !== 'AbortError') setUnavailable(true);

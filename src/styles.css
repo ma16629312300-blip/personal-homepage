@@ -1148,3 +1148,211 @@ button { font: inherit; color: inherit; }
 .moon .emblem__halo { opacity: calc(0.75 + var(--pulse-bass) * 1.2); }
 .moon .emblem { filter: drop-shadow(0 0 calc(var(--pulse-bass) * 3vh) rgba(200, 220, 255, 0.55)); }
 .sea__water { border-top-color: rgba(244, 245, 241, calc(0.45 + var(--pulse-level) * 0.5)); }
+
+/* ============================================================
+   羁绊等级 · 隐藏塔罗 · 天鹅绒房间
+   ============================================================ */
+.cal__bond {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem;
+  font-family: var(--font-display); font-style: italic; font-size: var(--fs-xs); letter-spacing: 0.16em;
+  animation: cal-slide 0.6s var(--ease-out) 0.45s both;
+}
+.cal__bond > span:first-child { opacity: 0.6; }
+.cal__bond b { font-weight: 800; letter-spacing: 0.08em; }
+.cal__pips { display: flex; gap: 2px; }
+.cal__pips i { width: 4px; height: 9px; background: rgba(244, 245, 241, 0.25); transform: skewX(-18deg); }
+.cal__pips i[data-on='true'] { background: var(--coral); }
+.cal__bond em { font-style: normal; color: #a9c8ff; letter-spacing: 0.08em; }
+
+/* 对话框头像：从对话框右上角探出来 */
+.dlg[data-avatar='true'] .dlg__box { padding-right: 8.4rem; }
+.dlg__avatar {
+  position: absolute; right: 0.2rem; bottom: 0; width: 9.4rem; height: auto; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, transparent, #000 0.6rem); mask-image: linear-gradient(to top, transparent, #000 0.6rem);
+}
+.dlg__next { z-index: 1; }
+
+/* 隐藏的塔罗 */
+.hcard {
+  position: absolute; z-index: 6; width: 2.4rem; aspect-ratio: 0.6; padding: 0; border: 0; background: none; cursor: pointer;
+  perspective: 600px; rotate: var(--r, -14deg); animation: hcard-bob 4.6s ease-in-out infinite;
+}
+.hcard__inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.6s var(--ease-out); }
+.hcard__back, .hcard__face { position: absolute; inset: 0; border-radius: 3px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.hcard__back {
+  overflow: hidden; background: center / cover no-repeat;
+  box-shadow: 0 0 0 1px rgba(244, 245, 241, 0.75), 0 0.4rem 0.9rem rgba(2, 8, 40, 0.55);
+}
+.hcard__back::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%) no-repeat;
+  background-size: 300% 100%; background-position: 120% 0; animation: hcard-glint 5.5s ease-in-out infinite;
+}
+.hcard__face {
+  transform: rotateY(180deg); display: grid; place-content: center; gap: 0.1rem; text-align: center;
+  background: var(--ivory); color: var(--cobalt-night); box-shadow: 0 0 0 1px var(--cobalt-night);
+}
+.hcard__face b { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 0.95rem; line-height: 1; }
+.hcard__face i { font-style: normal; font-family: var(--font-serif); font-weight: 900; font-size: 0.5rem; letter-spacing: 0.1em; }
+.hcard:hover .hcard__inner, .hcard:focus-visible .hcard__inner { transform: translateY(-0.4rem) rotate(8deg) scale(1.08); }
+.hcard[data-taking='true'] { animation: hcard-take 1.4s var(--ease-out) forwards; cursor: default; }
+.hcard[data-taking='true'] .hcard__inner { transform: rotateY(180deg); }
+@keyframes hcard-bob { 50% { translate: 0 -0.25rem; } }
+@keyframes hcard-glint { 0%, 72% { background-position: 120% 0; } 100% { background-position: -20% 0; } }
+@keyframes hcard-take {
+  0% { scale: 1; }
+  30% { scale: 2.4; translate: 0 -2rem; rotate: 0deg; }
+  72% { scale: 2.4; translate: 0 -2.3rem; rotate: 0deg; opacity: 1; }
+  100% { scale: 0.5; translate: 0 -30vh; rotate: 0deg; opacity: 0; }
+}
+/* 位置：桌面 */
+.hcard--home { left: 47vw; top: calc(var(--sea-line) + 9vh); --r: 72deg; }
+.hcard--about { left: 29vw; top: 70vh; --r: -18deg; }
+.hcard--projects { left: 56vw; top: 61vh; --r: 10deg; }
+.hcard--playground { left: 88vw; top: 58vh; --r: -10deg; }
+.hcard--contact { left: 62vw; top: 58.5vh; --r: -8deg; }
+
+/* 天鹅绒之门：五张牌集齐后浮在首页海面上 */
+.blue-door { position: absolute; z-index: 5; left: 64vw; top: calc(var(--sea-line) - 16vh); width: 9vh; display: block; animation: door-rise 2.6s var(--ease-out) both; }
+.blue-door__body {
+  position: relative; display: block;
+  filter: drop-shadow(0 0 1px rgba(244, 245, 241, 0.95)) drop-shadow(0 0 1.4vh rgba(130, 175, 255, 0.6));
+  transition: filter 0.3s, translate 0.3s var(--ease-out);
+}
+.blue-door img { display: block; width: 100%; height: auto; }
+.blue-door__light {
+  position: absolute; inset: -10% -40%; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(18% 46% at 64% 50%, rgba(170, 205, 255, 0.55), transparent 70%);
+  animation: door-light 3.2s ease-in-out infinite alternate;
+}
+.blue-door__reflect {
+  position: absolute; left: 0; top: 100%; width: 100%; transform: scaleY(-1); opacity: 0.4; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 45%); mask-image: linear-gradient(to top, #000, transparent 45%);
+  filter: blur(0.5px);
+}
+.blue-door__hint {
+  position: absolute; left: 50%; bottom: calc(100% + 0.8vh); translate: -50% 0; white-space: nowrap;
+  font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.3em;
+  opacity: 0.55; transition: opacity 0.3s;
+}
+.blue-door:hover .blue-door__body, .blue-door:focus-visible .blue-door__body { translate: 0 -0.6vh; filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2.6vh rgba(150, 190, 255, 0.9)); }
+.blue-door:hover .blue-door__hint, .blue-door:focus-visible .blue-door__hint { opacity: 1; }
+@keyframes door-rise { from { opacity: 0; translate: 0 4vh; filter: blur(4px); } }
+@keyframes door-light { from { opacity: 0.4; } to { opacity: 1; } }
+
+/* 天鹅绒房间 */
+.velvet { position: fixed; inset: 0; z-index: 55; overflow: hidden; background: #020a3a; color: var(--ivory); animation: velvet-open 1.3s var(--ease-out) both; }
+@keyframes velvet-open { from { clip-path: inset(0 49.6% 0 49.6%); } 70%, to { clip-path: inset(0 0 0 0); } }
+.velvet__room {
+  position: absolute; left: 50%; top: 50%; width: max(100vw, 177.7vh); aspect-ratio: 1672 / 941; translate: -50% -50%;
+  animation: velvet-descend 2.4s var(--ease-out) both;
+}
+@keyframes velvet-descend { from { transform: translateY(-7%) scale(1.1); filter: brightness(1.8) blur(6px); } 60% { filter: brightness(1.05) blur(0); } }
+.velvet__bg { display: block; width: 100%; height: 100%; }
+.velvet__lift {
+  position: absolute; top: 0; bottom: 0; width: 6%; pointer-events: none; mix-blend-mode: screen;
+  background: repeating-linear-gradient(to bottom, transparent 0 3.4vh, rgba(170, 205, 255, 0.35) 3.4vh calc(3.4vh + 2px), transparent calc(3.4vh + 2px) 11vh);
+  animation: velvet-lift 1.8s linear infinite;
+}
+.velvet__lift--l { left: 0.6%; }
+.velvet__lift--r { right: 0.6%; }
+@keyframes velvet-lift { to { background-position: 0 -11vh; } }
+.velvet__cards { position: absolute; left: 0; right: 0; bottom: 38%; height: 0; margin: 0; padding: 0; list-style: none; }
+.velvet__cards li {
+  position: absolute; bottom: 0; width: 6.4%; left: calc(50% + (var(--i) - 2) * 7.8%); translate: -50% calc(var(--d) * 1%);
+  rotate: calc((var(--i) - 2) * 6deg); transform-origin: 50% 100%;
+  animation: vcard-in 0.9s var(--ease-out) calc(1.2s + var(--i) * 0.12s) both;
+}
+@keyframes vcard-in { from { opacity: 0; translate: -50% 60%; } }
+.vcard {
+  position: relative; display: block; width: 100%; aspect-ratio: 0.6; padding: 0; border: 0; border-radius: 4px; cursor: pointer; overflow: hidden;
+  background: #0a1d6e; color: var(--cobalt-night);
+  box-shadow: 0 0 0 1px rgba(244, 245, 241, 0.85), 0 1vh 2.4vh rgba(0, 4, 30, 0.6);
+  animation: vcard-float 5s ease-in-out calc(var(--i) * -0.9s) infinite;
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s;
+}
+@keyframes vcard-float { 50% { translate: 0 -0.8vh; } }
+.vcard__art { position: absolute; inset: 0; background: center / cover no-repeat; }
+.vcard__plate {
+  position: absolute; left: 6%; right: 6%; bottom: 5%; display: grid; justify-items: center; padding: 6% 0 7%;
+  background: var(--ivory); font-size: clamp(8px, 0.62vmax, 12px); line-height: 1.15;
+}
+.vcard__plate b { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 1.7em; }
+.vcard__plate span { font-family: var(--font-display); font-style: italic; letter-spacing: 0.08em; white-space: nowrap; }
+.vcard__plate i { font-style: normal; font-family: var(--font-serif); font-weight: 900; letter-spacing: 0.2em; }
+.vcard:hover, .vcard:focus-visible { transform: translateY(-12%) scale(1.06); }
+.vcard[data-picked='true'] { transform: translateY(-22%) scale(1.18); box-shadow: 0 0 0 2px var(--ivory), 0 0 3vh rgba(150, 190, 255, 0.9); }
+.velvet__veil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(2, 8, 40, 0.88), rgba(2, 8, 40, 0.35) 34%, transparent 52%); }
+.velvet__title { position: absolute; left: var(--gutter); text-shadow: 0 0 0.6rem #020a3a, 0 0 1.4rem #020a3a; top: max(1.2rem, env(safe-area-inset-top)); animation: velvet-fade 0.8s var(--ease-out) 1s both; }
+.velvet__title h2 { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: clamp(1.8rem, 3.6vw, 3.2rem); letter-spacing: 0.06em; line-height: 1; }
+.velvet__title h2 span { display: block; margin-top: 0.3rem; font-family: var(--font-serif); font-style: normal; font-weight: 900; font-size: var(--fs-base); letter-spacing: 0.5em; }
+.velvet__title p { margin: 0.4rem 0 0; font-size: var(--fs-xs); letter-spacing: 0.24em; opacity: 0.65; }
+.velvet__exit {
+  position: absolute; right: var(--gutter); top: max(1.2rem, env(safe-area-inset-top)); display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1rem; color: var(--ivory); text-decoration: none; border: 1.5px solid rgba(244, 245, 241, 0.75);
+  background: rgba(2, 10, 50, 0.6); font-weight: 700; letter-spacing: 0.12em; animation: velvet-fade 0.8s var(--ease-out) 1s both;
+}
+.velvet__exit:hover, .velvet__exit:focus-visible { background: var(--ivory); color: var(--cobalt-night); }
+.velvet__dlg { position: absolute; left: 50%; bottom: max(3.5vh, env(safe-area-inset-bottom)); translate: -50% 0; width: min(42rem, calc(100vw - 2 * var(--gutter))); animation: velvet-fade 0.8s var(--ease-out) 1.4s both; }
+.velvet__dlg .dlg { max-width: none; }
+@keyframes velvet-fade { from { opacity: 0; translate: 0 1rem; } }
+.velvet__dlg { animation-name: velvet-fade-c; }
+@keyframes velvet-fade-c { from { opacity: 0; translate: -50% 1rem; } }
+
+/* 羁绊升级横幅 */
+.rankup { position: fixed; z-index: 58; left: 0; bottom: 20vh; pointer-events: none; filter: drop-shadow(0.5rem 0.5rem 0 var(--coral)); animation: rankup 3.8s var(--ease-out) both; }
+.rankup__band {
+  display: flex; align-items: center; gap: 1.2rem; padding: 0.9rem 4rem 0.9rem var(--gutter);
+  background: var(--ivory); color: var(--cobalt-night); clip-path: polygon(0 0, 100% 0, calc(100% - 2.6rem) 100%, 0 100%);
+}
+.rankup__card { width: 3.2rem; aspect-ratio: 0.6; flex: none; background: center / cover; border-radius: 3px; box-shadow: 0 0 0 1px var(--cobalt-night); animation: rankup-card 0.9s var(--ease-out) 0.15s both; }
+.rankup__text { display: grid; gap: 0.15rem; }
+.rankup__kicker { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.3em; opacity: 0.7; }
+.rankup__title { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: clamp(2rem, 4.6vw, 4.2rem); line-height: 0.95; letter-spacing: 0.02em; color: var(--cobalt); }
+.rankup__rank { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; font-family: var(--font-display); font-style: italic; font-size: var(--fs-base); letter-spacing: 0.14em; }
+.rankup__rank b { font-weight: 800; font-size: 1.3em; }
+.rankup__rank em { font-family: var(--font-serif); font-style: normal; font-weight: 700; font-size: var(--fs-sm); letter-spacing: 0.12em; opacity: 0.75; }
+@keyframes rankup {
+  0% { translate: -105% 0; }
+  12%, 84% { translate: 0 0; opacity: 1; }
+  100% { translate: 8% 0; opacity: 0; }
+}
+@keyframes rankup-card { from { transform: rotateY(540deg) scale(0.6); } }
+
+/* 小提示条 */
+.notice { position: fixed; z-index: 58; left: 50%; top: max(1.4rem, env(safe-area-inset-top)); translate: -50% 0; margin: 0; pointer-events: none; }
+.notice span {
+  display: block; padding: 0.5rem 1.3rem; white-space: nowrap; color: var(--ivory);
+  background: rgba(4, 13, 61, 0.88); border: 1px solid rgba(244, 245, 241, 0.6);
+  font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-sm); letter-spacing: 0.12em;
+  animation: notice 3.6s var(--ease-out) both;
+}
+@keyframes notice { 0% { opacity: 0; translate: 0 -0.6rem; } 10%, 85% { opacity: 1; translate: 0 0; } 100% { opacity: 0; } }
+
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .dlg[data-avatar='true'] .dlg__box { padding-right: 5.6rem; }
+  .dlg__avatar { width: 6.6rem; right: 0; }
+  .hcard { width: 2rem; }
+  .hcard--home { left: 12vw; top: calc(var(--sea-line) + 17svh); }
+  .hcard--about { left: 78vw; top: 30svh; }
+  .hcard--projects { left: 84vw; top: 46svh; }
+  .hcard--playground { left: 30vw; top: 37svh; --r: -20deg; }
+  .hcard--contact { left: 82vw; top: 36svh; }
+  .blue-door { left: 9vw; width: 5.6svh; top: calc(var(--sea-line) + 2svh); }
+  .velvet__cards { bottom: 50%; }
+  .velvet__cards li { width: 4.1%; left: calc(50% + (var(--i) - 2) * 4.45%); }
+  .velvet__title h2 { font-size: 1.7rem; }
+  .velvet__title p { display: none; }
+  .velvet__exit span { display: none; }
+  .velvet__exit { padding: 0.55rem; }
+  .rankup { bottom: calc(var(--nav-h) + 22svh); }
+  .rankup__band { gap: 0.8rem; padding-right: 2.8rem; }
+  .rankup__card { width: 2.4rem; }
+  .notice { top: auto; bottom: calc(var(--nav-h) + 1rem); }
+  .notice span { white-space: normal; text-align: center; width: max-content; max-width: calc(100vw - 2.5rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hcard, .hcard__back::after, .blue-door, .blue-door__light, .velvet, .velvet__room, .velvet__lift, .velvet__cards li, .vcard,
+  .velvet__title, .velvet__exit, .velvet__dlg, .rankup, .rankup__card, .notice span, .cal__bond { animation: none !important; }
+  .hcard[data-taking='true'] { display: none; }
+}

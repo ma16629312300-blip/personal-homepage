@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from './App.jsx';
+import { ARCANA_IDS, bond, rankOf, resetBond } from './lib/bond.js';
 
 const go = async (hash) => {
   await act(async () => {
@@ -12,6 +13,7 @@ const go = async (hash) => {
 afterEach(() => {
   window.history.replaceState(null, '', '/');
   cleanup();
+  resetBond();
 });
 
 describe('tiaotiao 个人空间', () => {
@@ -89,5 +91,37 @@ describe('tiaotiao 个人空间', () => {
     render(<App />);
     expect(screen.getByRole('button', { name: '把时钟拨到零点', hidden: true })).toBeInTheDocument();
     fireEvent.keyDown(window, { key: 'Escape' });
+  });
+
+  it('羁绊等级按做过的事累积，全部完成才到最高级', () => {
+    expect(rankOf(0)).toBe(1);
+    expect(rankOf(2)).toBe(2);
+    expect(rankOf(17)).toBe(9);
+    expect(rankOf(18)).toBe(10);
+  });
+
+  it('找到隐藏的塔罗会记进进度并显示在日历上', async () => {
+    render(<App />);
+    const card = screen.getByRole('button', { name: '藏在这里的塔罗牌' });
+    await act(async () => {
+      fireEvent.click(card);
+    });
+    expect(JSON.parse(window.localStorage.getItem('tiaotiao.bond.v1')).done).toContain('arcana:home');
+    expect(document.querySelector('.cal__bond').textContent).toMatch('1/5');
+  });
+
+  it('五张牌没集齐时进不了天鹅绒房间，集齐后蓝门出现并可进入', async () => {
+    render(<App />);
+    await go('#velvet');
+    expect(screen.queryByRole('dialog', { name: /天鹅绒房间/ })).not.toBeInTheDocument();
+    await go('#home');
+    await act(async () => {
+      ARCANA_IDS.forEach((id) => bond(`arcana:${id}`));
+    });
+    expect(screen.getByRole('link', { name: '推开天鹅绒之门' })).toHaveAttribute('href', '#velvet');
+    await go('#velvet');
+    const room = screen.getByRole('dialog', { name: /天鹅绒房间/ });
+    expect(within(room).getAllByRole('button', { name: /THE / })).toHaveLength(5);
+    expect(within(room).getByRole('link', { name: /离开房间/ })).toHaveAttribute('href', '#home');
   });
 });

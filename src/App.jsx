@@ -11,6 +11,9 @@ import { parseHash, sectionIndex, sections } from './data/sections.js';
 import { STEP, mod } from './lib/ring.js';
 import { DarkHourContext } from './lib/darkHour.js';
 import { sfx } from './lib/sfx.js';
+import { ARCANA_IDS, bond, useBond } from './lib/bond.js';
+import VelvetRoom from './components/VelvetRoom.jsx';
+import { Notice, RankUp } from './components/BondToasts.jsx';
 
 const count = sections.length;
 
@@ -39,6 +42,7 @@ export default function App() {
     setEvoke((n) => n + 1);
     if (!reduce) setSummonCard((n) => n + 1);
     setSummoned(true);
+    bond('summon');
     window.clearTimeout(evokeTimer.current);
     evokeTimer.current = window.setTimeout(() => setSummoned(false), 5200);
   };
@@ -54,6 +58,7 @@ export default function App() {
           setDark(true);
           setFlash((n) => n + 1);
           sfx('darkHour');
+          bond('darkHour');
           if (!reduce) setSummonCard((n) => n + 1);
         });
       },
@@ -61,6 +66,7 @@ export default function App() {
         setDark(true);
         setFlash((n) => n + 1);
         sfx('darkHour');
+        bond('darkHour');
         if (!reduce) setSummonCard((n) => n + 1);
       },
       exit: () => {
@@ -77,6 +83,13 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [dark, darkValue]);
+
+  /* 停在某一页就算"去过" */
+  useEffect(() => {
+    if (settled !== 'home') bond(`visit:${settled}`);
+  }, [settled]);
+  const bondState = useBond();
+  const velvetOpen = Boolean(route.velvet) && bondState.cards.length >= ARCANA_IDS.length;
 
   useEffect(() => {
     const onHash = () => {
@@ -207,7 +220,7 @@ export default function App() {
 
   return (
     <DarkHourContext.Provider value={darkValue}>
-      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned}>
+      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-velvet={velvetOpen}>
         <Stage ring={ring} route={route} reduce={reduce} settled={settled === route.section ? settled : null} />
         <SideNav activeId={route.section} />
         <Calendar />
@@ -228,6 +241,9 @@ export default function App() {
         {summonCard > 0 && <Shatter key={`card-${summonCard}`} center item={null} onDone={() => setSummonCard(0)} />}
         {intro !== 'done' && <Intro onOpen={() => setIntro('rising')} onDone={() => setIntro('done')} />}
         <p className="visually-hidden" role="status">{dark ? '已进入影时间，按 Esc 离开' : ''}</p>
+        {velvetOpen && <VelvetRoom />}
+        <Notice />
+        <RankUp />
       </div>
     </DarkHourContext.Provider>
   );
