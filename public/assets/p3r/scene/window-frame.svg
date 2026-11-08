@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2400" viewBox="0 0 1600 2400" role="img">
+<title>Two-opening window frame with transparent openings</title>
+
+<path id="frame-outline" fill="#121922" fill-rule="evenodd" d="M96 120H1504V2232H96Z M160 184H784V2168H160Z M816 184H1440V2168H816Z"/>
+<path d="M154 180V2174 M154 180H784 M810 180V2174 M810 180H1440" fill="none" stroke="#F4F5F1" stroke-width="6"/>
+<polygon points="72,2232 1528,2232 1560,2296 40,2296" fill="#2455FF"/>
+<path d="M40 2296H1560V2336H40Z" fill="#121922"/>
+</svg>
+

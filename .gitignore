@@ -5,3 +5,9 @@ docs/superpowers/
 .env
 .env.*
 npm-debug.log*
+
+# 素材源文件与本地测试输出（体积大，不进仓库）
+design-assets/
+test-result.txt
+build-result.txt
+debug.log

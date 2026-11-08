@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { setSfxEnabled } from '../lib/sfx.js';
 
 const bgmSrc = `${import.meta.env.BASE_URL}audio/color-your-night.mp3`;
 
@@ -16,6 +17,7 @@ export default function BgmControl() {
         audio.muted = true;
         audio.pause();
         setEnabled(false);
+        setSfxEnabled(false);
         return;
       }
 
@@ -23,6 +25,7 @@ export default function BgmControl() {
       audio.volume = 0.34;
       await audio.play();
       setEnabled(true);
+      setSfxEnabled(true);
     } catch {
       setUnavailable(true);
       setEnabled(false);
@@ -41,7 +44,7 @@ export default function BgmControl() {
         onClick={toggleBgm}
       >
         <span>BGM</span>
-        <strong>{unavailable ? '待添加' : enabled ? 'ON' : 'OFF'}</strong>
+        <strong>{unavailable ? '不可用' : enabled ? 'ON' : 'OFF'}</strong>
       </button>
     </div>
   );

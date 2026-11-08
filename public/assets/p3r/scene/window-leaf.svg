@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="624" height="1984" viewBox="0 0 624 1984" role="img">
+<title>Left-hinged three-pane casement leaf</title>
+
+<defs><clipPath id="leaf-panes">
+  <rect x="22" y="22" width="580" height="634.666667"/>
+  <rect x="22" y="674.666667" width="580" height="634.666667"/>
+  <rect x="22" y="1327.333333" width="580" height="634.666667"/>
+</clipPath></defs>
+<path data-leaf-frame="true" fill="#121922" fill-rule="evenodd" d="M0 0H624V1984H0Z M22 22H602V1962H22Z"/>
+<path d="M20 20H604V1964H20Z" fill="none" stroke="#F4F5F1" stroke-width="3"/>
+<rect data-muntin="1" x="22" y="656.666667" width="580" height="18" fill="#121922"/>
+<rect data-muntin="2" x="22" y="1309.333333" width="580" height="18" fill="#121922"/>
+<path d="M22 659.666667H602 M22 1312.333333H602" stroke="#F4F5F1" stroke-width="2"/>
+<g clip-path="url(#leaf-panes)">
+  <path d="M82 552L462 98L432 157L110 570Z M242 590L548 224L526 276L268 606Z M82 1848L446 1410L420 1470L108 1868Z" fill="#2455FF" opacity=".2"/>
+  <path d="M64 552L444 98L414 157L92 570Z M224 590L530 224L508 276L250 606Z M64 1848L428 1410L402 1470L90 1868Z" fill="#F4F5F1" opacity=".82"/>
+</g>
+<path d="M0 368H12V424H0Z M0 1558H12V1614H0Z" fill="#121922"/>
+<path d="M3 371H9V421H3Z M3 1561H9V1611H3Z" fill="#F4F5F1"/>
+<path data-latch="right" d="M602 958H624V1026H602Z M578 984H620V1002H578Z" fill="#FF655D"/>
+</svg>
+

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1600" viewBox="0 0 2400 1600" role="img">
+<title>Staircase step 6 on shared registration canvas</title>
+<g id="step-06" data-step="6" data-rise="128" data-run="220" transform="translate(1260 576)">
+  <polygon data-face="side" points="0,0 220,0 220,64 0,192" fill="#2455FF"/>
+  <polygon data-face="riser" points="0,0 180,-83.935378 180,44.064622 0,128" fill="#121922"/>
+  <polygon data-face="tread" points="0,0 220,0 400,-83.935378 180,-83.935378" fill="#F4F5F1"/>
+</g>
+</svg>
+
