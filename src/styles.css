@@ -306,7 +306,7 @@ button { font: inherit; color: inherit; }
    月光下的海
    ============================================================ */
 .sea__sky { position: absolute; inset: 0; z-index: 0; background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) var(--sea-line)); }
-.moon { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; will-change: transform; }
+.moon { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; will-change: transform; transform-origin: 0 0; }
 .moon .emblem { width: 100%; height: 100%; }
 .sea__tartarus {
   position: absolute; z-index: 2; left: 50%; bottom: calc(100vh - var(--sea-line)); height: 100vh; width: auto;
@@ -1365,7 +1365,11 @@ button { font: inherit; color: inherit; }
 /* ============================================================
    真实时间的天空：清晨 / 白天 / 放学后 / 夜晚（影时间优先）
    ============================================================ */
-.app { transition: --sky-top 2.4s ease, --sky-mid 2.4s ease, --sky-low 2.4s ease, --sea-hi 2.4s ease, --sea-lo 2.4s ease; }
+.app { transition: --sea-line 1.1s cubic-bezier(0.4, 0, 0.2, 1), --sky-top 2.4s ease, --sky-mid 2.4s ease, --sky-low 2.4s ease, --sea-hi 2.4s ease, --sea-lo 2.4s ease; }
+/* 手机上海平线直接跳到位：逐帧移动海平线会让整片天空和海面每帧重新排版，是首页 ↔ 简介转场卡顿的原因之一 */
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .app { transition: --sky-top 2.4s ease, --sky-mid 2.4s ease, --sky-low 2.4s ease, --sea-hi 2.4s ease, --sea-lo 2.4s ease; }
+}
 .app[data-sky='dawn']:not([data-dark-hour='true']) {
   --sky-top: #14246e; --sky-mid: #5a54b8; --sky-low: #f0a7a6; --sea-hi: #6a74d6; --sea-lo: #0f2172;
 }
@@ -1770,3 +1774,5 @@ button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: un
 @media (prefers-reduced-motion: reduce) { .guide, .photo-hint { animation: none; } }
 .sign .btn--primary { background: var(--cobalt-night); color: var(--ivory); border-color: var(--cobalt-night); }
 .sign .btn--primary:disabled { opacity: 0.4; }
+/* 手机上日历不再加高，免得挡住列车窗里的月亮 */
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) { .cal__count { display: none; } }

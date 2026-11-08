@@ -75,6 +75,8 @@ const NUMERALS = ['XII', 'I', 'II', 'III', 'IV', 'V', null, 'VII', 'VIII', 'IX',
 const ticks = Array.from({ length: 60 }, (_, i) => i);
 
 export default function MoonClock({ ring, settled, reduce, onGeometry }) {
+  const base = useRef({ key: '', size: 1 });
+  const frame = useRef(0);
   const dark = useDarkHour();
   const wrap = useRef(null);
   const lit = useRef(null);
@@ -114,14 +116,27 @@ export default function MoonClock({ ring, settled, reduce, onGeometry }) {
     const cx = lerp(la.cx, lb.cx, t);
     const cy = lerp(la.cy, lb.cy, t);
     const d = lerp(la.d, lb.d, t);
-    if (wrap.current) wrap.current.style.transform = `translate3d(${(cx - d / 2).toFixed(1)}px, ${(cy - d / 2).toFixed(1)}px, 0)`;
+    /* 月亮固定按最大尺寸排版一次，转场时只用 transform 缩放和移动，
+       不再每帧改宽高（每帧改宽高会让整个表盘重新排版和重绘，手机上很卡） */
+    const key = `${w}x${h}${geom.mobile}`;
+    if (base.current.key !== key) {
+      base.current = { key, size: Math.max(...sections.map((sec) => layout(sec.id, w, h, geom.mobile).d)) };
+      if (wrap.current) {
+        wrap.current.style.width = `${base.current.size.toFixed(1)}px`;
+        wrap.current.style.height = `${base.current.size.toFixed(1)}px`;
+      }
+    }
     if (wrap.current) {
-      wrap.current.style.width = `${d.toFixed(1)}px`;
-      wrap.current.style.height = `${d.toFixed(1)}px`;
+      const k = d / base.current.size;
+      wrap.current.style.transform = `translate3d(${(cx - d / 2).toFixed(1)}px, ${(cy - d / 2).toFixed(1)}px, 0) scale(${k.toFixed(4)})`;
       wrap.current.style.opacity = '1';
     }
     onGeometry?.(cx, cy, d);
 
+    /* 手机上转场途中月相每三帧才更新一次，减少重绘 */
+    frame.current += 1;
+    const moving = Math.abs(t) > 0.001 && Math.abs(t - 1) > 0.001;
+    if (geom.mobile && moving && frame.current % 3) return;
     const phase = darkRef.current ? 0.5 : lerp(cycleFor(A), cycleFor(B), t);
     const path = moonPath(phase);
     lit.current?.setAttribute('d', path);
