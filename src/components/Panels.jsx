@@ -8,6 +8,7 @@ import { useDarkHour } from '../lib/darkHour.js';
 import { sfx } from '../lib/sfx.js';
 import { bond } from '../lib/bond.js';
 import { BlueDoor, HiddenCard } from './Arcana.jsx';
+import { DailyTarot, Stats } from './Daily.jsx';
 
 function Heading({ section, children }) {
   return (
@@ -79,6 +80,7 @@ function About({ section, active }) {
           <li>游戏 UI</li>
           <li>交互实验</li>
         </ul>
+        <Stats />
       </div>
     </div>
   );
@@ -144,6 +146,9 @@ function Playground({ section, route, active }) {
               </a>
             </li>
           ))}
+          <li style={{ '--tilt': '-2deg' }}>
+            <DailyTarot />
+          </li>
         </ol>
       </div>
       {summon && (
@@ -272,13 +277,14 @@ const MAP = { home: Home, about: About, projects: Projects, playground: Playgrou
 
 export function PanelContent({ section, route, active }) {
   const C = MAP[section.id];
+  const [scrolled, setScrolled] = useState(false);
   return (
     <>
-      <div className="scroller">
+      <div className="scroller" onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 40)}>
         <C section={section} route={route} active={active} />
       </div>
       {section.id === 'home' && <BlueDoor />}
-      <HiddenCard section={section} />
+      <HiddenCard section={section} hidden={scrolled} />
     </>
   );
 }

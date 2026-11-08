@@ -6,6 +6,7 @@ import { useDarkHour } from '../lib/darkHour.js';
 import MoonClock from './MoonClock.jsx';
 import Sea from './Sea.jsx';
 import Butterfly from './Butterfly.jsx';
+import { WeatherFront } from './Weather.jsx';
 import BubbleBurst from './BubbleBurst.jsx';
 import Petals from './Petals.jsx';
 import { SCENES, SakuraBranch } from './Scenes.jsx';
@@ -25,7 +26,7 @@ const LAYERS = {
 function useLayer(rel, px, py, name) {
   const { d, spin, par, tilt } = LAYERS[name];
   return useTransform([rel, px, py], ([r, x, y]) => {
-    if (geom.mobile) return orbit(r, d, spin);
+    if (geom.mobile) return orbit(r, d, spin, x * par * 0.7, y * par * 0.35, x * 1.4 * tilt, -y * 0.9 * tilt);
     return orbit(r, d, spin, x * par, y * par * 0.5, x * 2.4 * tilt, -y * 1.6 * tilt);
   });
 }
@@ -67,12 +68,12 @@ function Panel({ section, index, ring, px, py, active, route, reduce, blur, load
       </motion.div>
       {load && section.school && (
         <motion.div className="layer layer--branch" style={s(word)} aria-hidden="true">
-          <SakuraBranch src={images.sakura} />
+          <SakuraBranch />
         </motion.div>
       )}
       {load && Scene && (
         <motion.div className="layer layer--scene" style={s(scene, true)} aria-hidden="true">
-          <Scene figure={section.character.src} carriage={images.carriage} school={images.school} persona={personaReady ? images.persona : null} />
+          <Scene figure={section.character.src} carriage={images.carriage} school={images.schoolSeasons} persona={personaReady ? images.persona : null} />
         </motion.div>
       )}
       {load && !section.inScene && (
@@ -169,6 +170,44 @@ export default function Stage({ ring, route, reduce, settled }) {
     };
   }, [ring, reduce, pointerX, pointerY]);
 
+  /* 手机陀螺仪：倾斜手机时画面层次跟着微动。基准角度会慢慢跟上手机的握持姿势，
+     所以怎么拿都行。iOS 需要访客点一下屏幕后授权。 */
+  useEffect(() => {
+    const DOE = window.DeviceOrientationEvent;
+    if (reduce || !DOE || window.matchMedia('(pointer: fine)').matches) return undefined;
+    const clamp = (v) => Math.max(-1, Math.min(1, v));
+    let base = null;
+    const onOri = (e) => {
+      if (e.gamma == null || e.beta == null) return;
+      const angle = window.screen?.orientation?.angle ?? 0;
+      let gx = e.gamma;
+      let gy = e.beta;
+      if (angle === 90) [gx, gy] = [e.beta, -e.gamma];
+      else if (angle === 270 || angle === -90) [gx, gy] = [-e.beta, e.gamma];
+      if (!base) base = { x: gx, y: gy };
+      base.x += (gx - base.x) * 0.004;
+      base.y += (gy - base.y) * 0.004;
+      pointerX.set(clamp((gx - base.x) / 16));
+      pointerY.set(clamp((gy - base.y) / 16));
+    };
+    const attach = () => window.addEventListener('deviceorientation', onOri);
+    let ask = null;
+    if (typeof DOE.requestPermission === 'function') {
+      ask = () => {
+        DOE.requestPermission()
+          .then((r) => r === 'granted' && attach())
+          .catch(() => {});
+      };
+      window.addEventListener('touchend', ask, { once: true });
+    } else {
+      attach();
+    }
+    return () => {
+      if (ask) window.removeEventListener('touchend', ask);
+      window.removeEventListener('deviceorientation', onOri);
+    };
+  }, [reduce, pointerX, pointerY]);
+
   return (
     <main className="stage" style={{ '--grain': `url(${images.grain})` }}>
       <motion.div className="camera" style={reduce ? undefined : { transform: camera }}>
@@ -194,6 +233,7 @@ export default function Stage({ ring, route, reduce, settled }) {
       </motion.div>
       <BubbleBurst route={route.section} reduce={reduce} />
       <Butterfly settled={settled} reduce={reduce} />
+      <WeatherFront reduce={reduce} />
       <div className="stage__grain" aria-hidden="true" />
     </main>
   );

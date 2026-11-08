@@ -1,3 +1,19 @@
+import { useEffect, useState } from 'react';
+import { images } from '../data/sections.js';
+import { useWorld } from '../lib/sky.js';
+
+/* 随季节换装的图片：当季的那张淡入，上一季的淡出。只加载看到过的季节。 */
+function Seasonal({ set, className }) {
+  const { season } = useWorld();
+  const [seen, setSeen] = useState(() => [season]);
+  useEffect(() => {
+    setSeen((list) => (list.includes(season) ? list : [...list, season]));
+  }, [season]);
+  return seen.map((k) => (
+    <img key={k} className={`${className} season-img`} data-on={k === season} src={set[k]} alt="" decoding="async" draggable="false" />
+  ));
+}
+
 /* 栏目场景：楼梯、窗户、天台栏杆。几何来自素材包 v4 的精确 SVG 坐标，颜色跟随主题变量。 */
 const RISE = 128;
 const RUN = 220;
@@ -37,7 +53,7 @@ const PLATFORM_DRIFT = [
 export function StairsScene({ figure, school }) {
   return (
     <>
-    <img className="school-hill" src={school} alt="" decoding="async" draggable="false" />
+    <Seasonal set={school} className="school-hill" />
     <div className="scene scene--stairs">
       <svg className="stairs" viewBox="0 0 2400 1600" aria-hidden="true">
         <polygon className="stairs__shadow" points="160,1408 1920,384 1960,432 200,1456" />
@@ -72,8 +88,8 @@ export function CarriageScene({ figure, carriage, persona }) {
 }
 
 /* 夜樱枝：伸入画面右上角，轻轻摇曳 */
-export function SakuraBranch({ src }) {
-  return <img className="sakura-branch" src={src} alt="" decoding="async" draggable="false" />;
+export function SakuraBranch() {
+  return <Seasonal set={images.sakuraSeasons} className="sakura-branch" />;
 }
 
 export function PlatformScene({ figure }) {

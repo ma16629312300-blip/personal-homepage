@@ -17,6 +17,18 @@ export const images = {
   carriage: asset('carriage'),
   sakura: asset('sakura-branch'),
   school: asset('school-hill'),
+  schoolSeasons: {
+    spring: asset('school-hill'),
+    summer: asset('school-hill-summer'),
+    autumn: asset('school-hill-autumn'),
+    winter: asset('school-hill-winter'),
+  },
+  sakuraSeasons: {
+    spring: asset('sakura-branch'),
+    summer: asset('sakura-branch-summer'),
+    autumn: asset('sakura-branch-autumn'),
+    winter: asset('sakura-branch-winter'),
+  },
   portrait: asset('portrait'),
   velvet: asset('velvet-room'),
   door: asset('blue-door'),
@@ -122,3 +134,48 @@ export function parseHash(hash) {
 }
 
 export const sectionIndex = (id) => sections.findIndex((s) => s.id === id);
+
+/* 个人简介里的人物参数（仿 P3 的学力 / 魅力 / 勇气）。数值 1–6，6 为 MAX，随时可以改 */
+export const stats = [
+  { zh: '学力', en: 'ACADEMICS', lv: 3, note: '勉强及格' },
+  { zh: '魅力', en: 'CHARM', lv: 4, note: '有点神秘' },
+  { zh: '勇气', en: 'COURAGE', lv: 4, note: '敢在零点出门' },
+  { zh: '手艺', en: 'CRAFT', lv: 5, note: '沉迷做网页' },
+  { zh: '忧郁', en: 'MELANCHOLY', lv: 6, note: '北辰第一' },
+];
+
+/* 每日塔罗：22 张大阿卡纳，每张一句当天的小建议 */
+export const majorArcana = [
+  ['0', 'THE FOOL', '愚者', '适合说走就走，哪怕只是换一条路回家。'],
+  ['I', 'THE MAGICIAN', '魔术师', '手边的工具已经够用了，开始做吧。'],
+  ['II', 'THE HIGH PRIESTESS', '女祭司', '安静一会儿，答案会自己浮上来。'],
+  ['III', 'THE EMPRESS', '女皇', '好好吃一顿饭，今天的你值得被照顾。'],
+  ['IV', 'THE EMPEROR', '皇帝', '定一个小计划，然后真的去执行它。'],
+  ['V', 'THE HIEROPHANT', '教皇', '去请教一个比你懂的人，会有收获。'],
+  ['VI', 'THE LOVERS', '恋人', '回复那条一直没回的消息吧。'],
+  ['VII', 'THE CHARIOT', '战车', '往前冲，犹豫的时间比做的时间还长。'],
+  ['VIII', 'STRENGTH', '力量', '温柔一点，也是一种很强的力量。'],
+  ['IX', 'THE HERMIT', '隐者', '允许自己一个人待一会儿。'],
+  ['X', 'WHEEL OF FORTUNE', '命运之轮', '运气在转，今天可以试试新东西。'],
+  ['XI', 'JUSTICE', '正义', '把拖着的小事一件件清掉。'],
+  ['XII', 'THE HANGED MAN', '倒吊人', '换个角度看，卡住的地方也许是捷径。'],
+  ['XIII', 'DEATH', '死神', '结束一件旧事，给新的东西腾个位置。'],
+  ['XIV', 'TEMPERANCE', '节制', '别熬夜，记得多喝水。'],
+  ['XV', 'THE DEVIL', '恶魔', '少刷一会儿手机，你知道我在说什么。'],
+  ['XVI', 'THE TOWER', '塔', '计划可能会被打乱，没关系，重新搭就好。'],
+  ['XVII', 'THE STAR', '星星', '适合许愿，也适合开始一个小项目。'],
+  ['XVIII', 'THE MOON', '月亮', '有点迷茫很正常，跟着直觉走一段。'],
+  ['XIX', 'THE SUN', '太阳', '出去晒晒太阳，心情会变好。'],
+  ['XX', 'JUDGEMENT', '审判', '回头看看，你已经走了很远。'],
+  ['XXI', 'THE WORLD', '世界', '一件事终于圆满，奖励一下自己。'],
+];
+
+/* 背景音乐：按时段换曲。文件放在 public/audio/ 下，填上文件名即可；
+   留空（null）的时段沿用 night 那首。 */
+export const bgmTracks = {
+  night: 'color-your-night.mp3',
+  dawn: null,
+  day: null,
+  dusk: null,
+  darkHour: null,
+};

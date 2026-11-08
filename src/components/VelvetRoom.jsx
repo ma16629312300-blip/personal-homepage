@@ -23,7 +23,7 @@ const CARD_LINES = {
   contact: '恋人，天台上那封信随时都可以寄出。我会回的。',
 };
 
-export default function VelvetRoom() {
+export default function VelvetRoom({ onRecord }) {
   const reduce = useReducedMotion();
   const [pick, setPick] = useState(null);
   const root = useRef(null);
@@ -98,6 +98,9 @@ export default function VelvetRoom() {
         </h2>
         <p>梦与现实、精神与物质的夹缝</p>
       </header>
+      <button type="button" className="velvet__record" onClick={onRecord} onPointerEnter={() => sfx('hover')}>
+        羁绊记录
+      </button>
       <a className="velvet__exit" href="#home" onPointerEnter={() => sfx('hover')}>
         <X aria-hidden="true" size={18} />
         <span>离开房间</span>

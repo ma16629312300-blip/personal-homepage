@@ -3,7 +3,8 @@ import { animate, useMotionValue, useMotionValueEvent } from 'motion/react';
 import { images, sections } from '../data/sections.js';
 import { useDarkHour } from '../lib/darkHour.js';
 import { STEP, geom, mod, updateGeom } from '../lib/ring.js';
-import { cycleOfWaxing, litOf, moonCycle, phaseName } from '../lib/moon.js';
+import { cycleOfWaxing, litOf, phaseName } from '../lib/moon.js';
+import { homeCycle } from '../lib/sky.js';
 
 /* 全站共享的月相钟。位置、大小、月相、指针都由环形轨道的角度插值得出：
    转场时月亮滑向新位置，月相连续盈亏，分针快进一圈。所有更新直接写 DOM，不触发 React 重渲染。 */
@@ -34,7 +35,7 @@ const CYCLE = {
   playground: cycleOfWaxing(0.76),
   contact: 0.5,
 };
-const cycleFor = (id) => (id === 'home' ? moonCycle() : CYCLE[id]);
+const cycleFor = (id) => (id === 'home' ? homeCycle() : CYCLE[id]);
 const TIME = { about: [23, 12, 0], projects: [23, 36, 0], playground: [23, 48, 0], contact: [23, 59, 30] };
 
 /* 各栏目的月亮布局（像素），桌面与手机分开 */

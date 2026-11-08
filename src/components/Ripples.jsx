@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { onBeat } from '../lib/pulse.js';
 
 /* 水面涟漪：鼠标划过海面时荡开扁平的椭圆波纹。只在精确指针设备上启用，空闲时不占用动画帧。 */
-export default function Ripples({ enabled }) {
+export default function Ripples({ enabled, rain = false }) {
   const canvas = useRef(null);
 
   useEffect(() => {
@@ -70,15 +70,32 @@ export default function Ripples({ enabled }) {
       if (!raf) raf = requestAnimationFrame(frame);
     });
 
+    /* 下雨：海面上不停冒出细小的雨点涟漪 */
+    let rainTimer = 0;
+    if (rain) {
+      rainTimer = window.setInterval(() => {
+        if (document.hidden) return;
+        const rect = el.getBoundingClientRect();
+        if (!rect.height) return;
+        for (let i = 0; i < 2; i += 1) {
+          const y = rect.height * Math.random() * 0.9;
+          ripples.push({ x: Math.random() * rect.width, y, t: performance.now(), depth: 0.08 + (y / rect.height) * 0.25 });
+        }
+        while (ripples.length > 40) ripples.shift();
+        if (!raf) raf = requestAnimationFrame(frame);
+      }, 90);
+    }
+
     if (fine) window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('resize', resize);
     return () => {
       cancelAnimationFrame(raf);
+      window.clearInterval(rainTimer);
       offBeat();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('resize', resize);
     };
-  }, [enabled]);
+  }, [enabled, rain]);
 
   return <canvas ref={canvas} className="ripples" aria-hidden="true" />;
 }

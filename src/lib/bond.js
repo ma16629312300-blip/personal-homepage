@@ -17,6 +17,9 @@ export const BOND_EVENTS = {
   summon: '召唤了人格面具',
   bgm: '一起听了歌',
   mail: '记下了邮箱',
+  daily: '抽了今天的塔罗',
+  dream: '在蝴蝶之梦里改变了天空',
+  secret: '念出了藏起来的咒语',
   'arcana:home': '找到了愚者',
   'arcana:about': '找到了隐者',
   'arcana:projects': '找到了战车',
@@ -26,6 +29,32 @@ export const BOND_EVENTS = {
 };
 export const ARCANA_IDS = ['home', 'about', 'projects', 'playground', 'contact'];
 const TOTAL = Object.keys(BOND_EVENTS).length;
+export const BOND_TOTAL = TOTAL;
+
+/* 没做过的事只给一句模糊提示 */
+export const BOND_HINTS = {
+  'visit:about': '去末班车上坐一坐',
+  'visit:projects': '登上那条樱花坡道',
+  'visit:playground': '去站台边看看',
+  'visit:contact': '爬上学校的天台',
+  'dialogue:about': '把列车上的自我介绍听完',
+  'dialogue:contact': '把天台上的留言听完',
+  'card:palm-universe': '翻开一张画着星星的牌',
+  'card:memory-album': '翻开一张画着月亮的牌',
+  darkHour: '让时钟的指针走到零点',
+  summon: '扣下那把召唤器',
+  bgm: '和我一起听首歌',
+  mail: '记下联系我的方式',
+  daily: '抽一张今天的塔罗',
+  dream: '追上那只停着的蓝蝶',
+  secret: '在键盘上念出某个词',
+  'arcana:home': '海面上漂着什么',
+  'arcana:about': '车厢的座位上落了东西',
+  'arcana:projects': '坡道的台阶上有张纸片',
+  'arcana:playground': '站台的台子上放着什么',
+  'arcana:contact': '天台栏杆边好像夹着东西',
+  velvet: '集齐五张牌之后，去海边找一扇门',
+};
 export const MAX_RANK = 10;
 
 /* 等级 1 起步，最后一级要求所有事情都做过（包括天鹅绒房间） */

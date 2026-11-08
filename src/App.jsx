@@ -10,9 +10,12 @@ import { EvokeCrack, EvokerButton, SummonLabel } from './components/Evoker.jsx';
 import { parseHash, sectionIndex, sections } from './data/sections.js';
 import { STEP, mod } from './lib/ring.js';
 import { DarkHourContext } from './lib/darkHour.js';
-import { sfx } from './lib/sfx.js';
-import { ARCANA_IDS, bond, useBond } from './lib/bond.js';
+import { buzz, sfx } from './lib/sfx.js';
+import { ARCANA_IDS, bond, notice, useBond } from './lib/bond.js';
+import { FESTIVAL_NAMES, useWorld } from './lib/sky.js';
+import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
+import Dream from './components/Dream.jsx';
 import { Notice, RankUp } from './components/BondToasts.jsx';
 
 const count = sections.length;
@@ -34,11 +37,15 @@ export default function App() {
   const [evoke, setEvoke] = useState(0);
   const [summoned, setSummoned] = useState(false);
   const evokeTimer = useRef(0);
+  const [touring, setTouring] = useState(false);
+  const [record, setRecord] = useState(false);
+  const touringRef = useRef(false);
 
   /* 召唤：裂纹 → 卡牌碎裂 → 人格面具浮现并显示标签，数秒后退场（影时间里会一直留着） */
   const onEvoke = () => {
     if (summoned) return;
     sfx('shatter');
+    buzz([40, 30, 90]);
     setEvoke((n) => n + 1);
     if (!reduce) setSummonCard((n) => n + 1);
     setSummoned(true);
@@ -58,6 +65,7 @@ export default function App() {
           setDark(true);
           setFlash((n) => n + 1);
           sfx('darkHour');
+          buzz(120);
           bond('darkHour');
           if (!reduce) setSummonCard((n) => n + 1);
         });
@@ -66,6 +74,7 @@ export default function App() {
         setDark(true);
         setFlash((n) => n + 1);
         sfx('darkHour');
+        buzz(120);
         bond('darkHour');
         if (!reduce) setSummonCard((n) => n + 1);
       },
@@ -84,16 +93,39 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [dark, darkValue]);
 
+  /* 真实的午夜 0 点：自动进入影时间，一分多钟后自行退去（手动进入的不受影响） */
+  const world = useWorld();
+  const autoDark = useRef({ day: '', on: false });
+  useEffect(() => {
+    const d = world.now;
+    const key = d.toDateString();
+    if (d.getHours() !== 0 || d.getMinutes() !== 0 || autoDark.current.day === key || dark) return undefined;
+    autoDark.current = { day: key, on: true };
+    darkValue.enterNow();
+    return undefined;
+  }, [world.now, dark, darkValue]);
+  useEffect(() => {
+    if (!dark || !autoDark.current.on) return undefined;
+    const id = window.setTimeout(() => {
+      autoDark.current.on = false;
+      darkValue.exit();
+    }, 75000);
+    return () => window.clearTimeout(id);
+  }, [dark, darkValue]);
+  useEffect(() => {
+    if (!dark) autoDark.current.on = false;
+  }, [dark]);
+
   /* 停在某一页就算"去过" */
   useEffect(() => {
-    if (settled !== 'home') bond(`visit:${settled}`);
+    if (settled !== 'home' && !touringRef.current) bond(`visit:${settled}`);
   }, [settled]);
   const bondState = useBond();
   const velvetOpen = Boolean(route.velvet) && bondState.cards.length >= ARCANA_IDS.length;
 
   useEffect(() => {
     const onHash = () => {
-      userMoved.current = true;
+      userMoved.current = !touringRef.current;
       setRoute(parseHash(window.location.hash));
     };
     window.addEventListener('hashchange', onHash);
@@ -163,7 +195,7 @@ export default function App() {
     /* 触屏：横向拖动时画面跟着手指转，松手超过阈值就转到相邻栏目，否则弹回 */
     let start = null;
     const onDown = (e) => {
-      if (e.pointerType !== 'touch' || e.target.closest?.('a, button, .side-nav')) return;
+      if (e.pointerType !== 'touch' || e.target.closest?.('a, button, .side-nav, .dream')) return;
       start = { x: e.clientX, y: e.clientY, base: target.current, dragging: false };
     };
     const onMove = (e) => {
@@ -203,6 +235,85 @@ export default function App() {
     };
   }, [ring]);
 
+  /* 自由时间：一段时间没有任何操作，就像 P3 的 FREE TIME 一样自动绕着月亮巡游各页；
+     一动鼠标、碰屏幕或按键就停。减少动态效果时不启用。 */
+  useEffect(() => {
+    if (reduce) return undefined;
+    const IDLE = 45000;
+    const STEP_MS = 7000;
+    let idle = 0;
+    let step = 0;
+    const start = () => {
+      const r = parseHash(window.location.hash);
+      if (document.hidden || r.detail || r.velvet) {
+        idle = window.setTimeout(start, IDLE);
+        return;
+      }
+      touringRef.current = true;
+      setTouring(true);
+      step = window.setInterval(() => {
+        const idx = sectionIndex(parseHash(window.location.hash).section);
+        window.location.hash = sections[mod(idx + 1, count)].id;
+      }, STEP_MS);
+    };
+    const wake = () => {
+      window.clearTimeout(idle);
+      window.clearInterval(step);
+      if (touringRef.current) {
+        touringRef.current = false;
+        setTouring(false);
+      }
+      idle = window.setTimeout(start, IDLE);
+    };
+    const evs = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'];
+    evs.forEach((e) => window.addEventListener(e, wake, { passive: true }));
+    idle = window.setTimeout(start, IDLE);
+    return () => {
+      window.clearTimeout(idle);
+      window.clearInterval(step);
+      evs.forEach((e) => window.removeEventListener(e, wake));
+    };
+  }, [reduce]);
+
+  /* 键盘彩蛋：直接键入 persona 召唤，键入 memento mori 进入影时间 */
+  const eggs = useRef({ onEvoke: null, dark: null });
+  eggs.current = { onEvoke, darkValue, dark };
+  useEffect(() => {
+    let buf = '';
+    const onKey = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key.length !== 1) return;
+      buf = (buf + e.key.toLowerCase()).replace(/[^a-z]/g, '').slice(-16);
+      const { onEvoke: evoke, darkValue: dv, dark: isDark } = eggs.current;
+      if (buf.endsWith('persona')) {
+        buf = '';
+        bond('secret');
+        evoke();
+      } else if (buf.endsWith('mementomori')) {
+        buf = '';
+        bond('secret');
+        if (!isDark) dv.enterNow();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  /* 节日当天第一次打开时提示一下 */
+  useEffect(() => {
+    if (world.festival === 'none') return undefined;
+    const key = `tiaotiao.fest.${world.festival}.${world.now.toDateString()}`;
+    try {
+      if (window.sessionStorage.getItem(key)) return undefined;
+      window.sessionStorage.setItem(key, '1');
+    } catch {
+      /* ignore */
+    }
+    const id = window.setTimeout(() => notice(`今天是${FESTIVAL_NAMES[world.festival]}。`), 2400);
+    return () => window.clearTimeout(id);
+  }, [world.festival]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* 左右方向键切换相邻栏目 */
   useEffect(() => {
     const onKey = (e) => {
@@ -220,10 +331,10 @@ export default function App() {
 
   return (
     <DarkHourContext.Provider value={darkValue}>
-      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-velvet={velvetOpen}>
+      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-velvet={velvetOpen} data-sky={world.sky} data-season={world.season} data-lunar={world.lunar} data-touring={touring} data-weather={world.weather} data-festival={world.festival}>
         <Stage ring={ring} route={route} reduce={reduce} settled={settled === route.section ? settled : null} />
         <SideNav activeId={route.section} />
-        <Calendar />
+        <Calendar onRecord={() => setRecord(true)} />
         <div className="top-controls">
           <EvokerButton onEvoke={onEvoke} disabled={summoned} />
           {dark && (
@@ -234,6 +345,7 @@ export default function App() {
           )}
           <BgmControl />
         </div>
+        {!dark && <Dream />}
         {flash > 0 && <div key={flash} className="dark-flash" aria-hidden="true" />}
         {evoke > 0 && !reduce && <EvokeCrack key={`crack-${evoke}`} />}
         {summoned && <SummonLabel key={`label-${evoke}`} />}
@@ -241,7 +353,14 @@ export default function App() {
         {summonCard > 0 && <Shatter key={`card-${summonCard}`} center item={null} onDone={() => setSummonCard(0)} />}
         {intro !== 'done' && <Intro onOpen={() => setIntro('rising')} onDone={() => setIntro('done')} />}
         <p className="visually-hidden" role="status">{dark ? '已进入影时间，按 Esc 离开' : ''}</p>
-        {velvetOpen && <VelvetRoom />}
+        {touring && (
+          <div className="free-time" aria-hidden="true">
+            <span className="free-time__en">FREE TIME</span>
+            <span className="free-time__zh">自由时间 · 动一下就会停下</span>
+          </div>
+        )}
+        {velvetOpen && <VelvetRoom onRecord={() => setRecord(true)} />}
+        {record && <BondRecord onClose={() => setRecord(false)} />}
         <Notice />
         <RankUp />
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { images } from '../data/sections.js';
 import { BOND_EVENTS, MAX_RANK, onNotice, onRankUp } from '../lib/bond.js';
-import { sfx } from '../lib/sfx.js';
+import { buzz, sfx } from '../lib/sfx.js';
 
 /* 羁绊升级：P3 风格的 "COMMU RANK UP!!" 横幅，从左下斜切进来，停留几秒后离场 */
 export function RankUp() {
@@ -10,6 +10,7 @@ export function RankUp() {
   useEffect(() => {
     const off = onRankUp((rank, prev, event) => {
       sfx('rankUp');
+      buzz([20, 40, 20, 40, 60]);
       setShow({ rank, prev, why: BOND_EVENTS[event], key: Date.now() });
       window.clearTimeout(timer.current);
       timer.current = window.setTimeout(() => setShow(null), 3800);

@@ -1,7 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from './App.jsx';
-import { ARCANA_IDS, bond, rankOf, resetBond } from './lib/bond.js';
+import { ARCANA_IDS, BOND_TOTAL, bond, rankOf, resetBond } from './lib/bond.js';
+import { festivalOf, lunarOf, seasonOf, setDream, skyOf, weatherOf } from './lib/sky.js';
 
 const go = async (hash) => {
   await act(async () => {
@@ -14,6 +15,8 @@ afterEach(() => {
   window.history.replaceState(null, '', '/');
   cleanup();
   resetBond();
+  window.localStorage.clear();
+  setDream(null);
 });
 
 describe('tiaotiao 个人空间', () => {
@@ -95,9 +98,9 @@ describe('tiaotiao 个人空间', () => {
 
   it('羁绊等级按做过的事累积，全部完成才到最高级', () => {
     expect(rankOf(0)).toBe(1);
-    expect(rankOf(2)).toBe(2);
-    expect(rankOf(17)).toBe(9);
-    expect(rankOf(18)).toBe(10);
+    expect(rankOf(3)).toBe(2);
+    expect(rankOf(BOND_TOTAL - 1)).toBe(9);
+    expect(rankOf(BOND_TOTAL)).toBe(10);
   });
 
   it('找到隐藏的塔罗会记进进度并显示在日历上', async () => {
@@ -123,5 +126,87 @@ describe('tiaotiao 个人空间', () => {
     const room = screen.getByRole('dialog', { name: /天鹅绒房间/ });
     expect(within(room).getAllByRole('button', { name: /THE / })).toHaveLength(5);
     expect(within(room).getByRole('link', { name: /离开房间/ })).toHaveAttribute('href', '#home');
+  });
+
+  it('天空、季节与月相跟着真实时间走', () => {
+    expect(skyOf(new Date(2026, 10, 8, 6, 0))).toBe('dawn');
+    expect(skyOf(new Date(2026, 10, 8, 12, 0))).toBe('day');
+    expect(skyOf(new Date(2026, 10, 8, 17, 0))).toBe('dusk');
+    expect(skyOf(new Date(2026, 10, 8, 23, 0))).toBe('night');
+    expect(seasonOf(new Date(2026, 3, 1))).toBe('spring');
+    expect(seasonOf(new Date(2026, 10, 8))).toBe('autumn');
+    expect(seasonOf(new Date(2026, 0, 8))).toBe('winter');
+    expect(lunarOf(new Date(Date.UTC(2000, 0, 6, 18, 14)))).toBe('new');
+    expect(lunarOf(new Date(Date.UTC(2000, 0, 21, 12, 0)))).toBe('full');
+  });
+
+  it('个人简介展示人物参数，忧郁度满级', async () => {
+    render(<App />);
+    await go('#about');
+    const stats = screen.getByRole('region', { name: /人物参数/ });
+    expect(within(stats).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(stats).getByText('MAX')).toBeInTheDocument();
+  });
+
+  it('每日塔罗每天只能抽一张，抽到后显示当天的牌', async () => {
+    render(<App />);
+    await go('#playground');
+    const card = screen.getByRole('button', { name: '抽一张今天的塔罗' });
+    await act(async () => {
+      fireEvent.click(card);
+    });
+    const drawn = screen.getByRole('button', { name: /^今日塔罗：/ });
+    const label = drawn.getAttribute('aria-label');
+    await act(async () => {
+      fireEvent.click(drawn);
+    });
+    expect(screen.getByRole('button', { name: /^今日塔罗：/ })).toHaveAttribute('aria-label', label);
+    expect(screen.getByText('明天再来抽一张。')).toBeInTheDocument();
+  });
+
+  it('点蓝蝶可以临时切换季节，并能还原现实', async () => {
+    render(<App />);
+    const real = document.querySelector('.app').dataset.season;
+    fireEvent.click(screen.getByRole('button', { name: /蓝蝶/ }));
+    const menu = screen.getByRole('group', { name: /蝴蝶之梦/ });
+    const target = real === 'winter' ? '夏' : '冬';
+    fireEvent.click(within(within(menu).getByRole('group', { name: '季节' })).getByRole('button', { name: target }));
+    expect(document.querySelector('.app').dataset.season).toBe(target === '冬' ? 'winter' : 'summer');
+    expect(screen.getByText('梦境中')).toBeInTheDocument();
+    fireEvent.click(within(menu).getByRole('button', { name: '还原现实' }));
+    expect(document.querySelector('.app').dataset.season).toBe(real);
+  });
+
+  it('天气按日期固定，节日按公历与农历判断', () => {
+    const d = new Date(2026, 10, 8);
+    expect(['clear', 'rain', 'fog']).toContain(weatherOf(d));
+    expect(weatherOf(new Date(2026, 10, 8, 23))).toBe(weatherOf(d));
+    expect(festivalOf(new Date(2027, 0, 1))).toBe('newyear');
+    expect(festivalOf(new Date(2026, 11, 25))).toBe('christmas');
+    expect(festivalOf(new Date(2027, 1, 6))).toBe('springfest');
+    expect(festivalOf(new Date(2026, 8, 25))).toBe('midautumn');
+    expect(festivalOf(new Date(2026, 7, 19))).toBe('qixi');
+    expect(festivalOf(new Date(2026, 10, 8))).toBe('none');
+  });
+
+  it('点日历的羁绊行打开记录，可以两步确认清除进度', async () => {
+    render(<App />);
+    await act(async () => {
+      bond('bgm');
+    });
+    fireEvent.click(screen.getByRole('button', { name: '打开羁绊记录' }));
+    const rec = screen.getByRole('dialog', { name: /羁绊记录/ });
+    expect(within(rec).getByText('一起听了歌')).toBeInTheDocument();
+    const wipe = within(rec).getByRole('button', { name: '清除全部进度' });
+    fireEvent.click(wipe);
+    fireEvent.click(within(rec).getByRole('button', { name: /确定清除/ }));
+    expect(within(rec).queryByText('一起听了歌')).not.toBeInTheDocument();
+    expect(within(rec).getByText('和我一起听首歌')).toBeInTheDocument();
+  });
+
+  it('键入 persona 会召唤人格面具', () => {
+    render(<App />);
+    'persona'.split('').forEach((key) => fireEvent.keyDown(window, { key }));
+    expect(screen.getByText('已召唤人格面具 HOROLOGIUM')).toBeInTheDocument();
   });
 });

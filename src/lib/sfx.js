@@ -118,3 +118,13 @@ export function sfx(name) {
   const a = audio();
   if (a && SOUNDS[name]) SOUNDS[name](a);
 }
+
+/* 手机震动反馈：只在支持的设备（主要是安卓）上生效，减少动态效果时不震 */
+export function buzz(pattern) {
+  try {
+    if (!navigator.vibrate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    navigator.vibrate(pattern);
+  } catch {
+    /* 不支持就算了 */
+  }
+}

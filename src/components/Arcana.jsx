@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { images } from '../data/sections.js';
 import { ARCANA_IDS, bond, notice, useBond } from '../lib/bond.js';
-import { sfx } from '../lib/sfx.js';
+import { buzz, sfx } from '../lib/sfx.js';
 
 /* 每页藏着一张小塔罗：半隐在场景里，点到就翻面、升起、收进口袋。 */
-export function HiddenCard({ section }) {
+export function HiddenCard({ section, hidden = false }) {
   const reduce = useReducedMotion();
   const state = useBond();
   const [taking, setTaking] = useState(false);
@@ -16,6 +16,7 @@ export function HiddenCard({ section }) {
     if (taking) return;
     setTaking(true);
     sfx('card');
+    buzz(30);
     const have = state.cards.length + 1;
     bond(`arcana:${section.id}`);
     notice(
@@ -31,6 +32,7 @@ export function HiddenCard({ section }) {
       type="button"
       className={`hcard hcard--${section.id}`}
       data-taking={taking}
+      data-scrolled={hidden}
       onClick={take}
       onPointerEnter={() => sfx('hover')}
       aria-label="藏在这里的塔罗牌"

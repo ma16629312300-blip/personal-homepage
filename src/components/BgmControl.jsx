@@ -1,14 +1,55 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { bgmTracks } from '../data/sections.js';
+import { useWorld } from '../lib/sky.js';
+import { useDarkHour } from '../lib/darkHour.js';
 import { setSfxEnabled } from '../lib/sfx.js';
 import { connectPulse, setPulsePlaying } from '../lib/pulse.js';
 import { bond } from '../lib/bond.js';
 
-const bgmSrc = `${import.meta.env.BASE_URL}audio/color-your-night.mp3`;
+const trackUrl = (name) => `${import.meta.env.BASE_URL}audio/${name}`;
+const VOLUME = 0.34;
+
+/* 音量渐变：换曲时先淡出再淡入 */
+function fade(audio, to, ms, done) {
+  const from = audio.volume;
+  const start = performance.now();
+  const id = window.setInterval(() => {
+    const k = Math.min(1, (performance.now() - start) / ms);
+    audio.volume = from + (to - from) * k;
+    if (k >= 1) {
+      window.clearInterval(id);
+      done?.();
+    }
+  }, 30);
+  return () => window.clearInterval(id);
+}
 
 export default function BgmControl() {
   const audioRef = useRef(null);
   const [enabled, setEnabled] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
+  const { sky } = useWorld();
+  const dark = useDarkHour();
+  const want = trackUrl((dark.active ? bgmTracks.darkHour : bgmTracks[sky]) || bgmTracks.night);
+  const [src, setSrc] = useState(want);
+
+  /* 时段或影时间变化时换曲：播放中就淡出、换曲、再淡入 */
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || want === src) return undefined;
+    if (!enabled) {
+      setSrc(want);
+      return undefined;
+    }
+    return fade(audio, 0, 700, () => setSrc(want));
+  }, [want, src, enabled]);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !enabled || !audio.paused) return undefined;
+    audio.volume = 0;
+    audio.play().catch(() => {});
+    return fade(audio, VOLUME, 900);
+  }, [src]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBgm = async () => {
     const audio = audioRef.current;
@@ -25,7 +66,7 @@ export default function BgmControl() {
       }
 
       audio.muted = false;
-      audio.volume = 0.34;
+      audio.volume = VOLUME;
       connectPulse(audio);
       await audio.play();
       setEnabled(true);
@@ -43,7 +84,7 @@ export default function BgmControl() {
 
   return (
     <div className="bgm-control">
-      <audio ref={audioRef} src={bgmSrc} loop preload="none" onError={() => setUnavailable(true)} />
+      <audio ref={audioRef} src={src} loop preload="none" onError={() => setUnavailable(true)} />
       <button
         type="button"
         className="bgm-control__button"

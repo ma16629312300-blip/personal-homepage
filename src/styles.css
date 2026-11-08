@@ -8,6 +8,11 @@
 @font-face { font-family: 'Noto Serif SC'; font-weight: 700; font-display: swap; src: url('./fonts/noto-serif-sc-700.woff') format('woff'); }
 
 @property --sea-line { syntax: '<length-percentage>'; inherits: true; initial-value: 66vh; }
+@property --sky-top { syntax: '<color>'; inherits: true; initial-value: #041153; }
+@property --sky-mid { syntax: '<color>'; inherits: true; initial-value: #0b2fb0; }
+@property --sky-low { syntax: '<color>'; inherits: true; initial-value: #3a6dff; }
+@property --sea-hi { syntax: '<color>'; inherits: true; initial-value: #2459ff; }
+@property --sea-lo { syntax: '<color>'; inherits: true; initial-value: #051a78; }
 
 /* ============================================================
    tiaotiao — 设计令牌
@@ -1355,4 +1360,360 @@ button { font: inherit; color: inherit; }
   .hcard, .hcard__back::after, .blue-door, .blue-door__light, .velvet, .velvet__room, .velvet__lift, .velvet__cards li, .vcard,
   .velvet__title, .velvet__exit, .velvet__dlg, .rankup, .rankup__card, .notice span, .cal__bond { animation: none !important; }
   .hcard[data-taking='true'] { display: none; }
+}
+
+/* ============================================================
+   真实时间的天空：清晨 / 白天 / 放学后 / 夜晚（影时间优先）
+   ============================================================ */
+.app { transition: --sky-top 2.4s ease, --sky-mid 2.4s ease, --sky-low 2.4s ease, --sea-hi 2.4s ease, --sea-lo 2.4s ease; }
+.app[data-sky='dawn']:not([data-dark-hour='true']) {
+  --sky-top: #14246e; --sky-mid: #5a54b8; --sky-low: #f0a7a6; --sea-hi: #6a74d6; --sea-lo: #0f2172;
+}
+.app[data-sky='day']:not([data-dark-hour='true']) {
+  --sky-top: #1c58e4; --sky-mid: #4d92ff; --sky-low: #c2e1ff; --sea-hi: #4a8cff; --sea-lo: #1240c0;
+}
+.app[data-sky='dusk']:not([data-dark-hour='true']) {
+  --sky-top: #1d1a66; --sky-mid: #9a3f86; --sky-low: #ff9a5c; --sea-hi: #c85a6e; --sea-lo: #1f1a62;
+}
+/* 太阳光下的海面碎光偏暖，白天的月亮淡成一枚白昼残月 */
+.app[data-sky='dawn']:not([data-dark-hour='true']) .sea__glitter { --glint: 255, 222, 214; }
+.app[data-sky='day']:not([data-dark-hour='true']) .sea__glitter { --glint: 255, 255, 236; }
+.app[data-sky='dusk']:not([data-dark-hour='true']) .sea__glitter { --glint: 255, 206, 150; }
+.moon .emblem__halo, .moon .emblem__moon-earthshine, .moon .emblem__moon-dark { transition: opacity 2.4s ease; }
+.app[data-sky='day']:not([data-dark-hour='true']) .moon .emblem__halo { opacity: 0.15; }
+.app[data-sky='day']:not([data-dark-hour='true']) .moon .emblem__moon-dark { opacity: 0.18; }
+.app[data-sky='day']:not([data-dark-hour='true']) .moon .emblem__moon-earthshine { opacity: 0.1; }
+.app[data-sky='dusk']:not([data-dark-hour='true']) .moon .emblem__halo { opacity: 0.45; }
+.app[data-sky='dusk']:not([data-dark-hour='true']) .skyline__inner { filter: sepia(0.25) hue-rotate(-12deg); }
+
+/* 星空：晴夜淡淡的星，新月之夜最亮 */
+.sea__sky::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: var(--sea-line); pointer-events: none; opacity: 0;
+  background-image:
+    radial-gradient(1.2px 1.2px at 8% 14%, #fff, transparent), radial-gradient(1px 1px at 17% 32%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 26% 9%, #fff, transparent), radial-gradient(1px 1px at 34% 41%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 43% 22%, #fff, transparent), radial-gradient(1px 1px at 51% 6%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 58% 35%, #fff, transparent), radial-gradient(1px 1px at 66% 16%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 73% 46%, #fff, transparent), radial-gradient(1px 1px at 81% 11%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 88% 29%, #fff, transparent), radial-gradient(1px 1px at 95% 19%, #fff, transparent),
+    radial-gradient(1px 1px at 4% 44%, #fff, transparent), radial-gradient(1.2px 1.2px at 21% 55%, #fff, transparent),
+    radial-gradient(1px 1px at 47% 52%, #fff, transparent), radial-gradient(1.2px 1.2px at 69% 58%, #fff, transparent),
+    radial-gradient(1px 1px at 92% 50%, #fff, transparent), radial-gradient(1.2px 1.2px at 38% 3%, #fff, transparent);
+  transition: opacity 2.4s ease; animation: twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle { from { filter: brightness(0.8); } to { filter: brightness(1.3); } }
+.app[data-sky='night'] .sea__sky::after { opacity: 0.35; }
+.app[data-sky='dawn'] .sea__sky::after { opacity: 0.12; }
+.app[data-sky='night'][data-lunar='new'] .sea__sky::after { opacity: 0.95; }
+.app[data-dark-hour='true'] .sea__sky::after { opacity: 0 !important; }
+
+/* 满月夜：月光更亮、倒影更强；新月夜：海面只剩微光 */
+.app[data-lunar='full']:not([data-dark-hour='true']) .moon .emblem__halo { opacity: calc(1 + var(--pulse-bass)); }
+.app[data-lunar='full']:not([data-dark-hour='true']) .moon .emblem { filter: drop-shadow(0 0 calc(2.4vh + var(--pulse-bass) * 3vh) rgba(225, 235, 255, 0.7)); }
+.app[data-lunar='full']:not([data-dark-hour='true']) .glitter__field { filter: brightness(1.35); }
+.app[data-lunar='new']:not([data-dark-hour='true']) .sea__glitter { opacity: 0.35; }
+.cal__event { margin-left: 0.3rem; padding: 0 0.4rem; font-style: normal; font-family: var(--font-serif); font-weight: 700; letter-spacing: 0.12em; color: var(--cobalt-night); background: var(--coral); }
+
+/* 季节：秋叶、冬雪、夏萤（春天沿用樱花） */
+.app[data-season='winter'] .petals, .app[data-season='summer'] .petals { opacity: 1; }
+.petals[data-kind='autumn'] .petal { background: #e8743b; border-radius: 0 85% 0 85%; box-shadow: inset -2px -2px 0 rgba(120, 30, 20, 0.35); }
+.petals[data-kind='autumn'] .petal--1 { background: #f2a541; }
+.petals[data-kind='autumn'] .petal--2 { background: #c8443a; }
+.petals[data-kind='winter'] .petal {
+  height: var(--s); border-radius: 50%; background: #fff; box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  animation-name: snow-fall;
+}
+.petals[data-kind='winter'] .petal--1 { opacity: 0.7; filter: blur(0.6px); }
+@keyframes snow-fall {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.9; }
+  50% { transform: translate(calc(var(--w) * 0.5 + 2vw), 52vh); }
+  100% { transform: translate(var(--w), 108vh); opacity: 0.2; }
+}
+.petals[data-kind='summer'] .petal {
+  top: var(--y); height: var(--s); border-radius: 50%; background: #e9ff8a;
+  box-shadow: 0 0 6px 2px rgba(220, 255, 120, 0.75), 0 0 16px 4px rgba(200, 255, 90, 0.3);
+  animation: firefly var(--t) ease-in-out var(--d) infinite alternate;
+}
+@keyframes firefly {
+  0% { transform: translate(0, 0); opacity: 0; }
+  25% { opacity: 0.9; }
+  50% { transform: translate(3vw, -4vh); opacity: 0.2; }
+  75% { opacity: 1; }
+  100% { transform: translate(-2vw, -9vh); opacity: 0; }
+}
+.app[data-sky='day'][data-season='summer'] .petals { opacity: 0.25; }
+/* 学园与樱花枝的四季图：叠在同一位置，当季的淡入 */
+.season-img { transition: opacity 1.4s ease; }
+.season-img[data-on='false'] { opacity: 0; }
+.app[data-season='autumn'] .bubble-burst--petals i { background: #e8743b; border-radius: 0 85% 0 85%; }
+.app[data-season='autumn'] .bubble-burst--petals i.petal--1 { background: #f2a541; }
+.app[data-season='autumn'] .bubble-burst--petals i.petal--2 { background: #c8443a; }
+.app[data-season='winter'] .bubble-burst--petals i { background: #fff; border-radius: 50%; height: var(--s); }
+.app[data-season='summer'] .bubble-burst--petals i { background: #7fcf6a; }
+.app[data-season='summer'] .bubble-burst--petals i.petal--1 { background: #a8e08a; }
+@media (prefers-reduced-motion: reduce) { .sea__sky::after { animation: none; } }
+
+/* 自由时间：无人操作时的自动巡游提示 */
+.free-time {
+  position: fixed; z-index: 45; left: 50%; bottom: 5vh; translate: -50% 0; display: grid; justify-items: center; gap: 0.2rem;
+  padding: 0.5rem 2.2rem 0.6rem; pointer-events: none; color: var(--cobalt-night); background: var(--ivory);
+  clip-path: polygon(1.2rem 0, 100% 0, calc(100% - 1.2rem) 100%, 0 100%);
+  animation: free-time-in 0.7s var(--ease-out) both, free-time-blink 2.4s ease-in-out 0.7s infinite;
+}
+.free-time__en { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.6rem); line-height: 1; letter-spacing: 0.08em; color: var(--cobalt); }
+.free-time__zh { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.2em; }
+@keyframes free-time-in { from { opacity: 0; translate: -50% 1rem; } }
+@keyframes free-time-blink { 50% { opacity: 0.75; } }
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .free-time { bottom: calc(var(--nav-h) + 1rem); }
+}
+
+/* 每日塔罗（有趣功能的第三张牌） */
+.pg-cards li { width: clamp(8.5rem, 11.5vw, 13rem); }
+.daily { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; overflow: visible; perspective: 900px; box-shadow: none; color: inherit; font: inherit; }
+.daily__inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.9s var(--ease-out); }
+.daily[data-drawn='true'] .daily__inner { transform: rotateY(180deg); }
+.daily__back, .daily__face {
+  position: absolute; inset: 0; border-radius: 10px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 1.6vh 3vh rgba(2, 8, 40, 0.55), 0 0 0 1px rgba(244, 245, 241, 0.5);
+}
+.daily__back { display: grid; place-items: end center; background: var(--cobalt-night) center / cover no-repeat; }
+.daily__ask {
+  margin-bottom: 12%; padding: 0.15rem 0.9rem; background: var(--ivory); color: var(--cobalt-night);
+  font-family: var(--font-display); font-style: italic; font-weight: 800; letter-spacing: 0.3em;
+  animation: daily-ask 1.4s ease-in-out infinite alternate;
+}
+@keyframes daily-ask { to { opacity: 0.55; } }
+.daily__face { transform: rotateY(180deg); color: var(--ivory); background: radial-gradient(circle at 50% 40%, #2a5cff 0, #0a2a9c 38%, #061c7a 70%); }
+.daily__face::before { content: ''; position: absolute; inset: 5%; border: 1px solid rgba(244, 245, 241, 0.7); border-radius: 6px; }
+.daily__num { position: absolute; top: 8%; left: 0; right: 0; text-align: center; font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: clamp(1.3rem, 2.2vw, 2rem); text-shadow: 0 2px 0 var(--cobalt-night); }
+.daily__star {
+  position: absolute; left: 50%; top: 44%; width: 36%; aspect-ratio: 1; translate: -50% -50%; background: var(--ivory);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: daily-star 9s linear infinite;
+}
+@keyframes daily-star { to { rotate: 360deg; } }
+.daily__name {
+  position: absolute; left: 6%; right: 6%; bottom: 5%; padding: 0.35rem 0; display: grid; justify-items: center;
+  background: var(--ivory); color: var(--cobalt-night); clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
+}
+.daily__name b { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.1em; line-height: 1.1; white-space: nowrap; }
+.daily__name i { font-style: normal; font-size: 0.68rem; letter-spacing: 0.3em; line-height: 1.3; }
+.daily[data-flipping='true'] { animation: daily-pop 0.9s var(--ease-out); }
+@keyframes daily-pop { 40% { scale: 1.08; } }
+.daily__verdict { display: inline-block; margin-right: 0.4em; padding: 0 0.4em; background: var(--coral); color: var(--ivory); font-family: var(--font-serif); font-weight: 900; letter-spacing: 0.1em; }
+.daily__again { display: block; margin-top: 0.25rem; opacity: 0.65; font-size: var(--fs-xs); }
+
+/* 人物参数 */
+.stats { margin-top: 1.4rem; max-width: 34rem; }
+.stats__title { margin: 0 0 0.5rem; font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: var(--fs-lg); letter-spacing: 0.12em; }
+.stats__title span { margin-left: 0.6em; font-family: var(--font-serif); font-style: normal; font-weight: 700; font-size: var(--fs-sm); letter-spacing: 0.3em; opacity: 0.8; }
+.stats__list { display: grid; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.stat {
+  display: grid; grid-template-columns: 5.4rem auto 2.8rem minmax(0, 1fr); align-items: center; gap: 0.7rem; padding: 0.28rem 1rem 0.28rem 0.7rem;
+  color: var(--ivory); background: linear-gradient(90deg, rgba(2, 10, 50, 0.82), rgba(2, 10, 50, 0.3));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); font-size: var(--fs-sm);
+}
+.stat__name { display: grid; line-height: 1.1; }
+.stat__name b { font-family: var(--font-serif); font-weight: 900; letter-spacing: 0.2em; }
+.stat__name i { font-family: var(--font-display); font-style: italic; font-size: 0.62rem; letter-spacing: 0.12em; opacity: 0.6; }
+.stat__bar { display: flex; gap: 3px; }
+.stat__bar i { width: 1rem; height: 0.7rem; transform: skewX(-20deg); background: rgba(244, 245, 241, 0.16); }
+.stat__bar i[data-on='true'] { background: var(--ivory); }
+.stat:last-child .stat__bar i[data-on='true'] { background: var(--coral); }
+.panel[data-active='true'] .stat__bar i[data-on='true'] { animation: stat-on 0.25s ease both; animation-delay: calc(0.7s + var(--i) * 0.12s + var(--k) * 0.06s); }
+@keyframes stat-on { from { background: rgba(244, 245, 241, 0.16); } }
+.stat__lv { font-family: var(--font-display); font-style: italic; font-weight: 800; letter-spacing: 0.06em; }
+.stat:last-child .stat__lv { color: var(--coral); }
+.stat__note { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; }
+.app[data-dark-hour='true'] .stat { background: linear-gradient(90deg, rgba(1, 8, 4, 0.85), rgba(1, 8, 4, 0.3)); }
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .pg-cards { flex-wrap: wrap; row-gap: 1.6rem; }
+  .stats__title { color: var(--cobalt-night); }
+  .stat { grid-template-columns: 4.4rem auto 2.6rem minmax(0, 1fr); gap: 0.5rem; }
+  .stat__bar i { width: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily__ask, .daily__star, .daily[data-flipping='true'], .panel[data-active='true'] .stat__bar i[data-on='true'], .free-time { animation: none; }
+  .daily__inner { transition: none; }
+}
+@media (min-width: 761px) { .pg-card__title, .pg-card__teaser { text-shadow: 0 1px 6px rgba(2, 10, 50, 0.75); } }
+.hcard { transition: opacity 0.3s ease; }
+.hcard[data-scrolled='true'] { opacity: 0; pointer-events: none; }
+
+/* 蝴蝶之梦：右上角停着的蓝蝶与它的小菜单 */
+.dream { position: fixed; z-index: 41; right: var(--gutter); top: calc(max(1.2rem, env(safe-area-inset-top)) + 3.3rem); }
+.dream-perch {
+  display: block; width: 2.9rem; aspect-ratio: 1.25; padding: 0.15rem; margin-left: auto; border: 0; background: none; cursor: pointer;
+  filter: drop-shadow(0 0 0.5rem rgba(90, 160, 255, 0.85)); transition: filter 0.3s, translate 0.3s var(--ease-out);
+  animation: perch-in 1s var(--ease-out) 1.2s both;
+}
+.dream-perch svg { width: 100%; height: 100%; overflow: visible; }
+.dream-perch .butterfly__wing--l, .dream-perch .butterfly__wing--r { animation: perch-flap 2.8s ease-in-out infinite; }
+.dream-perch:hover, .dream-perch:focus-visible, .dream-perch[aria-expanded='true'] { translate: 0 -0.2rem; filter: drop-shadow(0 0 0.9rem rgba(130, 190, 255, 1)); }
+.dream-perch:hover .butterfly__wing--l, .dream-perch:hover .butterfly__wing--r,
+.dream-perch[aria-expanded='true'] .butterfly__wing--l, .dream-perch[aria-expanded='true'] .butterfly__wing--r { animation-duration: 0.3s; }
+.dream-perch[data-dreaming='true'] { filter: drop-shadow(0 0 0.7rem rgba(255, 140, 220, 0.95)); }
+.dream-perch[data-dreaming='true'] .butterfly__wing path { fill: #b58cff; }
+.dream-perch[data-dreaming='true'] .butterfly__wing path + path { fill: #7a5cff; }
+@keyframes perch-flap { 0%, 70%, 100% { transform: scaleX(1); } 78% { transform: scaleX(0.3); } 86% { transform: scaleX(1); } 92% { transform: scaleX(0.45); } }
+@keyframes perch-in { from { opacity: 0; translate: -3rem 2rem; rotate: -20deg; } }
+.dream-menu {
+  position: absolute; right: 0; top: calc(100% + 0.5rem); width: min(26rem, calc(100vw - 2 * var(--gutter))); padding: 0.9rem 1rem 0.8rem;
+  color: var(--ivory); background: linear-gradient(160deg, rgba(2, 10, 50, 0.95), rgba(6, 28, 122, 0.9));
+  border: 1.5px solid rgba(244, 245, 241, 0.75); border-radius: 4px 16px 4px 16px; box-shadow: 0.4rem 0.4rem 0 rgba(255, 101, 93, 0.85);
+  animation: dream-in 0.35s var(--ease-out) both; transform-origin: 100% 0;
+}
+@keyframes dream-in { from { opacity: 0; scale: 0.92; translate: 0 -0.4rem; } }
+.dream-menu__head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.6rem; }
+.dream-menu__head h2 { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 1.15rem; letter-spacing: 0.1em; line-height: 1.1; }
+.dream-menu__head h2 span { display: block; font-family: var(--font-serif); font-style: normal; font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.4em; opacity: 0.8; }
+.dream-menu__close { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; padding: 0; border: 1px solid rgba(244, 245, 241, 0.5); background: none; color: inherit; cursor: pointer; }
+.dream-row { display: grid; grid-template-columns: 3.4rem 1fr; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-top: 1px solid rgba(244, 245, 241, 0.15); }
+.dream-row__label { display: grid; line-height: 1.1; }
+.dream-row__label b { font-family: var(--font-serif); font-weight: 900; letter-spacing: 0.2em; font-size: var(--fs-sm); }
+.dream-row__label i { font-family: var(--font-display); font-style: italic; font-size: 0.62rem; letter-spacing: 0.14em; opacity: 0.6; }
+.dream-row__opts { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.dream-row__opts button, .dream-menu__actions button {
+  padding: 0.2rem 0.6rem; border: 1px solid rgba(244, 245, 241, 0.45); background: transparent; color: var(--ivory); cursor: pointer;
+  font: inherit; font-size: var(--fs-sm); letter-spacing: 0.08em; transition: background 0.2s, color 0.2s;
+}
+.dream-row__opts button:hover, .dream-row__opts button:focus-visible { border-color: var(--ivory); }
+.dream-row__opts button[aria-pressed='true'] { background: var(--ivory); color: var(--cobalt-night); border-color: var(--ivory); font-weight: 700; }
+.dream-menu__actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+.dream-menu__actions button { flex: 1; padding: 0.45rem 0.6rem; font-weight: 700; }
+.dream-menu__shuffle { background: rgba(244, 245, 241, 0.12) !important; }
+.dream-menu__wake:not(:disabled) { background: var(--coral) !important; border-color: var(--coral) !important; color: var(--cobalt-night) !important; }
+.dream-menu__actions button:disabled { opacity: 0.4; cursor: default; }
+.dream-menu__actions button:not(:disabled):hover { filter: brightness(1.15); }
+.dream-menu__note { margin: 0.5rem 0 0; font-size: var(--fs-xs); opacity: 0.6; letter-spacing: 0.08em; }
+.cal__dream { margin-left: 0.4rem; padding: 0 0.4rem; font-style: normal; font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.12em; color: #fff; background: #7a5cff; }
+.app[data-velvet='true'] .dream { display: none; }
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .dream { top: calc(env(safe-area-inset-top) + 3.6rem); }
+  .dream-perch { width: 2.5rem; }
+  .dream-row { grid-template-columns: 2.8rem 1fr; }
+  .dream-row__opts button { padding: 0.2rem 0.45rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dream-perch, .dream-perch .butterfly__wing--l, .dream-perch .butterfly__wing--r, .dream-menu { animation: none; }
+}
+
+/* ============================================================
+   天气 · 节日 · 羁绊记录
+   ============================================================ */
+/* 日历上的羁绊行是按钮，可以打开记录 */
+.cal { pointer-events: none; }
+button.cal__bond {
+  pointer-events: auto; padding: 0.1rem 0.3rem 0.1rem 0; margin-left: 0; border: 0; background: none; color: inherit; cursor: pointer; text-align: left;
+}
+button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: underline; text-underline-offset: 3px; }
+.cal__weather { display: inline-flex; align-items: center; gap: 0.2rem; margin-left: 0.4rem; font-family: var(--font-serif); font-weight: 700; letter-spacing: 0.1em; }
+.cal__wicon { width: 0.95rem; height: 0.95rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.cal__weather[data-weather='clear'] .cal__wicon circle { fill: var(--coral); stroke: none; }
+.cal__weather[data-weather='clear'] .cal__wicon line { stroke: var(--coral); }
+.cal__weather[data-weather='rain'] .cal__wicon path { fill: rgba(244, 245, 241, 0.85); stroke: none; }
+.cal__weather[data-weather='rain'] .cal__wicon line { stroke: #8fb6ff; }
+.cal__event--fest { background: #ffd678; }
+
+/* 雨：天空发灰、月光变暗，前景斜雨 */
+.app[data-weather='rain']:not([data-dark-hour='true']) .sea__sky { filter: saturate(0.55) brightness(0.82); }
+.app[data-weather='rain']:not([data-dark-hour='true']) .sea__glitter { opacity: 0.3; }
+.app[data-weather='rain']:not([data-dark-hour='true']) .moon .emblem__halo { opacity: 0.25; }
+.app[data-weather='rain']:not([data-dark-hour='true']) .sea__sky::after { opacity: 0 !important; }
+.rain { position: absolute; inset: 0; z-index: 23; pointer-events: none; overflow: hidden; }
+.rain__layer { position: absolute; inset: -20% -20%; transform: rotate(12deg); }
+.rain__layer--far {
+  background-image: repeating-linear-gradient(90deg, transparent 0 23px, rgba(220, 232, 255, 0.22) 23px 24px, transparent 24px 61px);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 90px); mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 90px);
+  animation: rain-fall 0.9s linear infinite;
+}
+.rain__layer--near {
+  background-image: repeating-linear-gradient(90deg, transparent 0 47px, rgba(235, 242, 255, 0.35) 47px 48.5px, transparent 48.5px 113px);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 44px, transparent 44px 160px); mask-image: repeating-linear-gradient(180deg, #000 0 44px, transparent 44px 160px);
+  animation: rain-fall 0.55s linear infinite;
+}
+@keyframes rain-fall { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: 0 160px; mask-position: 0 160px; } }
+.rain__layer--far { animation-name: rain-fall-far; }
+@keyframes rain-fall-far { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: 0 90px; mask-position: 0 90px; } }
+
+/* 雾：远处城市变朦胧，海平线附近漂着雾带 */
+.app[data-weather='fog']:not([data-dark-hour='true']) .skyline { filter: blur(1.2px); opacity: 0.5; }
+.app[data-weather='fog']:not([data-dark-hour='true']) .sea__glitter { opacity: 0.55; }
+.app[data-weather='fog']:not([data-dark-hour='true']) .sea__sky::after { opacity: 0.08 !important; }
+.fog { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.fog__band {
+  position: absolute; left: -50%; width: 200%; height: 16vh; border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(214, 226, 255, 0.34), transparent 70%);
+  animation: fog-drift 40s linear infinite alternate;
+}
+.fog__band--a { top: calc(var(--sea-line) - 12vh); }
+.fog__band--b { top: calc(var(--sea-line) - 2vh); height: 12vh; animation-duration: 55s; animation-direction: alternate-reverse; opacity: 0.8; }
+.fog__band--c { top: calc(var(--sea-line) - 24vh); height: 20vh; animation-duration: 70s; opacity: 0.55; }
+@keyframes fog-drift { from { translate: -12% 0; } to { translate: 12% 0; } }
+.app[data-dark-hour='true'] .fog, .app[data-dark-hour='true'] .rain { display: none; }
+
+/* 节日 */
+.fireworks { position: absolute; left: 0; top: 0; width: 100%; height: var(--sea-line); z-index: 1; pointer-events: none; }
+.app[data-dark-hour='true'] .fireworks { display: none; }
+/* 七夕：一条斜跨夜空的银河 */
+.sea__sky::before {
+  content: ''; position: absolute; left: -10%; right: -10%; top: 0; height: var(--sea-line); pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(ellipse 60% 9% at 50% 50%, rgba(220, 230, 255, 0.35), transparent 70%),
+    radial-gradient(ellipse 45% 4% at 50% 50%, rgba(255, 255, 255, 0.35), transparent 70%);
+  transform: rotate(-24deg); transition: opacity 2s ease;
+}
+.app[data-festival='qixi']:not([data-dark-hour='true']) .sea__sky::before { opacity: 1; }
+.app[data-festival='qixi']:not([data-dark-hour='true']) .sea__sky::after { opacity: 0.9; }
+/* 中秋：月亮额外明亮 */
+.app[data-festival='midautumn']:not([data-dark-hour='true']) .moon .emblem { filter: drop-shadow(0 0 4vh rgba(255, 236, 190, 0.75)); }
+.app[data-festival='midautumn']:not([data-dark-hour='true']) .glitter__field { filter: brightness(1.5) sepia(0.25); }
+/* 圣诞彩灯 */
+.garland { position: absolute; left: 0; top: 0; width: 100%; height: 7vh; z-index: 23; pointer-events: none; }
+.garland svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.garland__wire { fill: none; stroke: rgba(244, 245, 241, 0.45); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+.garland__bulb { position: absolute; width: 9px; height: 12px; translate: -50% -10%; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; animation: bulb 1.8s ease-in-out infinite alternate; }
+.garland__bulb--0 { background: #ff655d; box-shadow: 0 0 8px 2px rgba(255, 101, 93, 0.7); }
+.garland__bulb--1 { background: #ffd678; box-shadow: 0 0 8px 2px rgba(255, 214, 120, 0.7); }
+.garland__bulb--2 { background: #7fb2ff; box-shadow: 0 0 8px 2px rgba(127, 178, 255, 0.7); }
+.garland__bulb--3 { background: #9be08a; box-shadow: 0 0 8px 2px rgba(155, 224, 138, 0.7); }
+@keyframes bulb { from { opacity: 0.35; } to { opacity: 1; } }
+.app[data-dark-hour='true'] .garland { display: none; }
+
+/* 羁绊记录 */
+.record { position: fixed; inset: 0; z-index: 57; display: grid; place-items: center; padding: var(--gutter); background: rgba(2, 8, 40, 0.55); backdrop-filter: blur(3px); animation: velvet-fade 0.3s var(--ease-out) both; }
+.record__box {
+  width: min(32rem, 100%); max-height: min(88vh, 46rem); display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+  color: var(--ivory); background: linear-gradient(160deg, rgba(2, 10, 50, 0.97), rgba(6, 28, 122, 0.94));
+  border: 1.5px solid rgba(244, 245, 241, 0.75); border-radius: 4px 18px 4px 18px; box-shadow: 0.5rem 0.5rem 0 rgba(255, 101, 93, 0.85);
+}
+.record__head { position: relative; padding: 1rem 3.4rem 0.7rem 1.2rem; border-bottom: 1px solid rgba(244, 245, 241, 0.2); }
+.record__head h2 { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 1.5rem; letter-spacing: 0.08em; line-height: 1.05; }
+.record__head h2 span { display: block; font-family: var(--font-serif); font-style: normal; font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.4em; opacity: 0.8; }
+.record__rank { margin: 0.4rem 0 0; display: flex; gap: 0.6rem; align-items: baseline; font-family: var(--font-display); font-style: italic; letter-spacing: 0.12em; }
+.record__rank b { font-weight: 800; font-size: 1.2em; color: var(--coral); }
+.record__rank span { opacity: 0.7; }
+.record__close { position: absolute; right: 0.9rem; top: 0.9rem; display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border: 1px solid rgba(244, 245, 241, 0.5); background: none; color: inherit; cursor: pointer; }
+.record__list { margin: 0; padding: 0.4rem 1.2rem; overflow-y: auto; list-style: none; }
+.record__list li { display: flex; align-items: center; gap: 0.7rem; padding: 0.42rem 0; border-bottom: 1px dashed rgba(244, 245, 241, 0.14); font-size: var(--fs-sm); }
+.record__mark { flex: none; display: grid; place-items: center; width: 1.3rem; height: 1.3rem; font-size: 0.75rem; border: 1px solid rgba(244, 245, 241, 0.5); }
+.record__list li[data-done='true'] .record__mark { background: var(--ivory); color: var(--cobalt-night); border-color: var(--ivory); font-weight: 900; }
+.record__list li[data-done='false'] .record__text { opacity: 0.6; font-style: italic; }
+.record__foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.7rem 1.2rem 0.9rem; border-top: 1px solid rgba(244, 245, 241, 0.2); }
+.record__foot p { margin: 0; font-size: var(--fs-xs); opacity: 0.6; }
+.record__wipe { padding: 0.35rem 0.8rem; border: 1px solid rgba(255, 101, 93, 0.8); background: none; color: var(--coral); font: inherit; font-size: var(--fs-sm); cursor: pointer; }
+.record__wipe[data-confirm='true'] { background: var(--coral); color: var(--cobalt-night); font-weight: 700; }
+.velvet__record {
+  position: absolute; right: calc(var(--gutter) + 8.4rem); top: max(1.2rem, env(safe-area-inset-top)); padding: 0.5rem 1rem;
+  color: var(--ivory); border: 1.5px solid rgba(244, 245, 241, 0.75); background: rgba(2, 10, 50, 0.6); font: inherit; font-weight: 700; letter-spacing: 0.12em; cursor: pointer;
+  animation: velvet-fade 0.8s var(--ease-out) 1s both;
+}
+.velvet__record:hover, .velvet__record:focus-visible { background: var(--ivory); color: var(--cobalt-night); }
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .velvet__record { right: calc(var(--gutter) + 3.2rem); padding: 0.5rem 0.7rem; }
+  .cal__weather { margin-left: 0.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fog__band, .garland__bulb, .record { animation: none; }
 }

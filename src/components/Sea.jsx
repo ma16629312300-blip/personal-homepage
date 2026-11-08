@@ -1,5 +1,7 @@
 import { forwardRef, useMemo } from 'react';
 import { motion, useTransform } from 'motion/react';
+import { Fireworks, Fog } from './Weather.jsx';
+import { useWorld } from '../lib/sky.js';
 import Ripples from './Ripples.jsx';
 
 /* 月光下的海：天空、远处港岛剪影、海面波纹、月光碎光带、上浮气泡。
@@ -147,9 +149,11 @@ const Sea = forwardRef(function Sea({ ring, tartarus, skyline, persona, reduce }
     const v = ((((a / 72) * 34) % 170) + 170) % 170;
     return `${(-v).toFixed(2)}vw`;
   });
+  const { weather, festival } = useWorld();
   return (
     <div className="sea" aria-hidden="true">
       <div className="sea__sky" />
+      {(festival === 'newyear' || festival === 'springfest') && <Fireworks reduce={reduce} />}
       {tartarus && <img className="sea__tartarus" src={tartarus} alt="" decoding="async" />}
       {persona && <img className="sea__persona" src={persona} alt="" decoding="async" />}
       <div className="skyline">
@@ -166,9 +170,10 @@ const Sea = forwardRef(function Sea({ ring, tartarus, skyline, persona, reduce }
         <div className="sea__glitter" ref={glitterRef}>
           <Glitter />
         </div>
-        <Ripples enabled={!reduce} />
+        <Ripples enabled={!reduce} rain={weather === 'rain'} />
         <Coffins />
       </div>
+      {weather === 'fog' && <Fog />}
       <div className="bubbles">
         {BUBBLES.map(([x, s, delay, dur]) => (
           <i key={x} style={{ '--x': `${x}%`, '--s': `${s}px`, '--delay': `${delay}s`, '--dur': `${dur}s` }} />
