@@ -59,6 +59,10 @@ const SOUNDS = {
   hover(a) {
     tone(a, { type: 'triangle', from: 2200, to: 1900, dur: 0.05, gain: 0.025 });
   },
+  /* 对话逐字：很轻的短促音 */
+  text(a) {
+    tone(a, { type: 'square', from: 1200 + Math.random() * 120, dur: 0.025, gain: 0.012 });
+  },
   /* 确认：两声上行的钟音 */
   select(a) {
     tone(a, { type: 'sine', from: 880, dur: 0.12, gain: 0.05 });

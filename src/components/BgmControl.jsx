@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { setSfxEnabled } from '../lib/sfx.js';
+import { connectPulse, setPulsePlaying } from '../lib/pulse.js';
 
 const bgmSrc = `${import.meta.env.BASE_URL}audio/color-your-night.mp3`;
 
@@ -18,17 +19,23 @@ export default function BgmControl() {
         audio.pause();
         setEnabled(false);
         setSfxEnabled(false);
+        setPulsePlaying(false);
         return;
       }
 
       audio.muted = false;
       audio.volume = 0.34;
+      connectPulse(audio);
       await audio.play();
       setEnabled(true);
       setSfxEnabled(true);
-    } catch {
-      setUnavailable(true);
+      setPulsePlaying(true);
+    } catch (error) {
+      /* 浏览器拦截自动播放时只是没播成，不代表音乐坏了，下次点击还能再试 */
+      if (error?.name !== 'NotAllowedError' && error?.name !== 'AbortError') setUnavailable(true);
       setEnabled(false);
+      setSfxEnabled(false);
+      setPulsePlaying(false);
     }
   };
 

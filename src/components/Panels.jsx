@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowLeft, ArrowUpRight, Copy, Download, Mail } from 'lucide-react';
 import { email, playgroundItems } from '../data/sections.js';
 import { CardFace, Shatter } from './Tarot.jsx';
+import Dialogue from './Dialogue.jsx';
 import { useDarkHour } from '../lib/darkHour.js';
 import { sfx } from '../lib/sfx.js';
 
@@ -45,16 +46,25 @@ function Home({ section }) {
   );
 }
 
-function About({ section }) {
+const ABOUT_LINES = [
+  '……啊，你来了。我是 tiaotiao。',
+  '河北工业大学北辰最忧郁之人。',
+  '我喜欢把网页做成有情绪的界面。',
+  '也喜欢把小玩法、小工具和视觉实验，塞进自己的宇宙里。',
+  '要去看看吗？',
+];
+const ABOUT_CHOICES = [
+  { label: '去看看有趣功能', href: '#playground' },
+  { label: '想联系 tiaotiao', href: '#contact' },
+  { label: '再听一遍', restart: true },
+];
+
+function About({ section, active }) {
   return (
     <div className="content content--about">
       <Heading section={section} />
       <div className="about-body">
-        <p className="about-name">tiaotiao</p>
-        <p className="about-motto">河北工业大学北辰最忧郁之人。</p>
-        <p className="about-copy">
-          喜欢把网页做成有情绪的界面，也喜欢把小玩法、小工具和视觉实验塞进自己的宇宙里。
-        </p>
+        <Dialogue name="tiaotiao" lines={ABOUT_LINES} choices={ABOUT_CHOICES} active={active} />
         <ul className="about-tags" aria-label="关键词">
           <li>河北工业大学</li>
           <li>游戏 UI</li>
@@ -196,7 +206,9 @@ function Playground({ section, route, active }) {
   );
 }
 
-function Contact({ section }) {
+const CONTACT_LINES = ['想找我的话……', '写信到这个邮箱就好。'];
+
+function Contact({ section, active }) {
   const [copied, setCopied] = useState(null);
   const timer = useRef(0);
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -213,6 +225,16 @@ function Contact({ section }) {
   return (
     <div className="content content--contact">
       <Heading section={section} />
+      <Dialogue
+        name="tiaotiao"
+        lines={CONTACT_LINES}
+        active={active}
+        choices={[
+          { label: '发邮件', href: `mailto:${email}` },
+          { label: '复制邮箱', onClick: () => copy() },
+          { label: '下次再说', href: '#home' },
+        ]}
+      />
       <p className="contact-email">{email}</p>
       <div className="contact-actions">
         <a className="btn btn--primary" href={`mailto:${email}`}>

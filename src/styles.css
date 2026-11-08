@@ -332,16 +332,25 @@ button { font: inherit; color: inherit; }
   animation: waves 14s linear infinite;
 }
 @keyframes waves { from { background-position: 0 0; } to { background-position: 0 44px; } }
-.sea__glitter { position: absolute; top: 0; bottom: 0; left: 50%; width: 30vh; translate: -50% 0; pointer-events: none; }
-.sea__glitter span {
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(to bottom, rgba(244, 245, 241, 0.9) 0 2px, transparent 2px 8px);
-  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
-  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 1.6vh, transparent 1.6vh 3vh), linear-gradient(to bottom, #000, transparent 92%);
-  -webkit-mask-composite: source-in; mask-composite: intersect;
-  animation: glitter 2.4s steps(5) infinite;
+.sea__glitter { position: absolute; top: 0; bottom: 0; left: 50%; width: 38vh; translate: -50% 0; pointer-events: none; --glint: 244, 245, 241; }
+.glitter__field { position: absolute; inset: 0; transform-origin: 50% 0; }
+.glitter__field i {
+  position: absolute; translate: -50% 0; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--glint), 1) 25% 75%, transparent);
+  opacity: var(--o);
+  animation: glint var(--d) ease-in-out var(--delay) infinite alternate;
 }
-@keyframes glitter { from { -webkit-mask-position: 0 0, 0 0; mask-position: 0 0, 0 0; } to { -webkit-mask-position: 3vh 0, 0 0; mask-position: 3vh 0, 0 0; } }
+@keyframes glint {
+  0% { opacity: var(--o); transform: scaleX(1); }
+  45% { opacity: calc(var(--o) * 0.2); transform: scaleX(0.55); }
+  70% { opacity: calc(var(--o) * 1.15); transform: scaleX(1.1) translateX(6%); }
+  100% { opacity: calc(var(--o) * 0.45); transform: scaleX(0.8) translateX(-4%); }
+}
+.glitter__glow {
+  position: absolute; left: 50%; top: 0; width: 110%; height: 34%; translate: -50% -8%;
+  background: radial-gradient(50% 40% at 50% 8%, rgba(var(--glint), 0.32), rgba(var(--glint), 0.08) 55%, transparent 75%);
+  filter: blur(4px);
+}
 .bubbles { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
 .bubbles i {
   position: absolute; left: var(--x); bottom: -24px; width: var(--s); height: var(--s); border-radius: 50%;
@@ -654,7 +663,7 @@ button { font: inherit; color: inherit; }
   .reveal { transition: none !important; clip-path: none !important; }
   .panel-head__title::after { display: none; }
   .side-nav__item::before, .btn::before,   .frag, .dust, .clouds, .bubbles { display: none; }
-  .sea__waves, .sea__glitter span, .panel--home .figure, .skyline__inner { animation: none !important; }
+  .sea__waves, .glitter__field i, .panel--home .figure, .skyline__inner { animation: none !important; }
 }
 
 /* 竖屏平板：沿用手机构图，场景向中间靠拢 */
@@ -822,7 +831,7 @@ button { font: inherit; color: inherit; }
   opacity: 1; transform: none;
   transition: opacity 0.6s ease calc(0.6s + var(--i) * 0.12s), transform 1s cubic-bezier(0.2, 0.8, 0.2, 1) calc(0.6s + var(--i) * 0.12s);
 }
-.app[data-dark-hour='true'] .sea__glitter span { background: repeating-linear-gradient(to bottom, rgba(215, 242, 90, 0.85) 0 2px, transparent 2px 8px); }
+.app[data-dark-hour='true'] .sea__glitter { --glint: 215, 242, 90; }
 .app[data-dark-hour='true'] .sea__water::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, rgba(120, 0, 20, 0.28), transparent 45%);
@@ -1082,3 +1091,60 @@ button { font: inherit; color: inherit; }
   clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
 }
 .app[data-dark-hour='true'] .cal { background: linear-gradient(110deg, rgba(1, 8, 4, 0.82), rgba(1, 8, 4, 0.55)); }
+
+/* ============================================================
+   P3 风格对话框
+   ============================================================ */
+.dlg { position: relative; display: grid; gap: 0.8rem; max-width: 34rem; margin-top: 0.4rem; }
+.dlg__box {
+  position: relative; display: block; width: 100%; min-height: 8.6rem; padding: 1.8rem 1.6rem 1.4rem; text-align: left; cursor: pointer;
+  color: var(--ivory); background: linear-gradient(160deg, rgba(2, 10, 50, 0.9), rgba(6, 28, 122, 0.82));
+  border: 1.5px solid rgba(244, 245, 241, 0.75); border-radius: 4px 18px 4px 18px;
+  box-shadow: 0.45rem 0.45rem 0 rgba(255, 101, 93, 0.85);
+  font: inherit; font-size: var(--fs-lg); line-height: 1.75; letter-spacing: 0.04em;
+  transition: transform 0.2s var(--ease-out);
+}
+.dlg__box:active { transform: translate(2px, 2px); }
+.dlg__name {
+  position: absolute; left: 1.1rem; top: 0; translate: 0 -55%; padding: 0.1rem 1.1rem 0.15rem 0.9rem;
+  font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: var(--fs-base); letter-spacing: 0.08em;
+  color: var(--cobalt-night); background: var(--ivory); clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+.dlg__text { display: block; min-height: 3.5em; }
+.dlg__ghost { visibility: hidden; }
+.dlg__page { position: absolute; left: 1.6rem; bottom: 0.4rem; font-family: var(--font-display); font-style: italic; font-size: var(--fs-xs); letter-spacing: 0.2em; opacity: 0.55; }
+.dlg__next { position: absolute; right: 1.2rem; bottom: 0.5rem; font-size: 0.8rem; color: var(--coral); animation: dlg-next 0.8s ease-in-out infinite alternate; }
+@keyframes dlg-next { from { translate: 0 -2px; } to { translate: 0 3px; } }
+.dlg__skip {
+  justify-self: end; min-height: 36px; padding: 0.2rem 0.8rem; border: 0; background: transparent; cursor: pointer;
+  font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: var(--fs-xs); letter-spacing: 0.24em; color: inherit; opacity: 0.7;
+}
+.dlg__skip:hover { opacity: 1; }
+.dlg__choices { display: grid; gap: 0.45rem; justify-items: start; animation: dlg-choices 0.45s var(--ease-out) both; }
+@keyframes dlg-choices { from { opacity: 0; translate: -1rem 0; } to { opacity: 1; translate: 0 0; } }
+.dlg__choice {
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0.3rem 1.6rem 0.3rem 2.2rem; cursor: pointer;
+  font: inherit; font-weight: 700; letter-spacing: 0.12em; text-decoration: none; color: var(--ivory);
+  background: rgba(2, 10, 50, 0.75); border: 1px solid rgba(244, 245, 241, 0.5);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), translate 0.2s var(--ease-out);
+}
+.dlg__choice::before { content: '▶'; position: absolute; left: 0.8rem; font-size: 0.7rem; color: var(--coral); opacity: 0; transition: opacity 0.2s; }
+.dlg__choice:hover, .dlg__choice:focus-visible { background: var(--ivory); color: var(--cobalt-night); translate: 0.4rem 0; }
+.dlg__choice:hover::before, .dlg__choice:focus-visible::before { opacity: 1; }
+.content--contact .dlg { margin: 1.8rem 0 0.4rem; }
+.app[data-dark-hour='true'] .dlg__box { background: linear-gradient(160deg, rgba(1, 8, 4, 0.92), rgba(6, 30, 16, 0.85)); box-shadow: 0.45rem 0.45rem 0 rgba(201, 239, 79, 0.7); }
+
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .dlg__box { font-size: var(--fs-base); min-height: 7.6rem; padding: 1.6rem 1.2rem 1.4rem; }
+  .dlg__choice { color: var(--ivory); }
+}
+@media (prefers-reduced-motion: reduce) { .dlg__next, .dlg__choices { animation: none; } }
+
+/* 音乐脉动：BGM 播放时由音频分析写入 --pulse-bass / --pulse-level */
+:root { --pulse-bass: 0; --pulse-level: 0; }
+.glitter__field { opacity: calc(0.9 + var(--pulse-bass) * 0.5); transform: scaleX(calc(1 + var(--pulse-bass) * 0.6)); }
+.sea__waves { opacity: calc(0.85 + var(--pulse-level) * 0.6); }
+.moon .emblem__halo { opacity: calc(0.75 + var(--pulse-bass) * 1.2); }
+.moon .emblem { filter: drop-shadow(0 0 calc(var(--pulse-bass) * 3vh) rgba(200, 220, 255, 0.55)); }
+.sea__water { border-top-color: rgba(244, 245, 241, calc(0.45 + var(--pulse-level) * 0.5)); }

@@ -82,6 +82,66 @@ function Panorama({ src }) {
   );
 }
 
+/* 月光碎影：按透视生成。贴近海平线又细又密，越往近处越稀、越长、越淡，
+   整体轮廓是"远窄近宽"的三角形（与真实海面的月光带一致）。 */
+function rand(seed) {
+  let a = seed;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const GLINTS = (() => {
+  const r = rand(20581);
+  const out = [];
+  const ROWS = 30;
+  for (let i = 0; i < ROWS; i += 1) {
+    const t = (i + r() * 0.6) / ROWS;            // 深度 0=海平线 1=眼前
+    const y = Math.pow(t, 1.75) * 96;             // 透视：远处行距密
+    const half = 0.07 + 0.43 * t;                 // 三角形半宽（占容器宽）
+    const count = 1 + Math.round(t * 2.4 + r() * 0.8);
+    for (let k = 0; k < count; k += 1) {
+      const u = (r() * 2 - 1) * (r() * 0.5 + 0.5); // 中间密、两侧疏
+      const len = (0.05 + 0.2 * t) * (0.55 + r() * 0.9);
+      const edge = Math.abs(u);
+      out.push({
+        x: 50 + u * half * 100,
+        y,
+        w: len * 100,
+        h: t < 0.25 ? 1 : t < 0.6 ? 2 : 3,
+        o: Math.max(0.12, (0.98 - 0.62 * t) * (1 - edge * 0.55)),
+        d: 1.4 + r() * 2.6,
+        delay: -r() * 4,
+      });
+    }
+  }
+  return out;
+})();
+
+function Glitter() {
+  return (
+    <div className="glitter__field">
+      <div className="glitter__glow" />
+      {GLINTS.map((g, i) => (
+        <i
+          key={i}
+          style={{
+            left: `${g.x.toFixed(2)}%`,
+            top: `${g.y.toFixed(2)}%`,
+            width: `${g.w.toFixed(2)}%`,
+            height: `${g.h}px`,
+            '--o': g.o.toFixed(2),
+            '--d': `${g.d.toFixed(2)}s`,
+            '--delay': `${g.delay.toFixed(2)}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 const Sea = forwardRef(function Sea({ ring, tartarus, skyline, persona, reduce }, glitterRef) {
   const shift = useTransform(ring, (a) => {
     const v = ((((a / 72) * 34) % 170) + 170) % 170;
@@ -104,7 +164,7 @@ const Sea = forwardRef(function Sea({ ring, tartarus, skyline, persona, reduce }
       <div className="sea__water">
         <motion.div className="sea__waves" style={{ x: shift }} />
         <div className="sea__glitter" ref={glitterRef}>
-          <span />
+          <Glitter />
         </div>
         <Ripples enabled={!reduce} />
         <Coffins />

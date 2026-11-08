@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
+import { onBeat } from '../lib/pulse.js';
 
 /* 水面涟漪：鼠标划过海面时荡开扁平的椭圆波纹。只在精确指针设备上启用，空闲时不占用动画帧。 */
 export default function Ripples({ enabled }) {
   const canvas = useRef(null);
 
   useEffect(() => {
-    if (!enabled || !window.matchMedia('(pointer: fine)').matches) return undefined;
+    if (!enabled) return undefined;
+    const fine = window.matchMedia('(pointer: fine)').matches;
     const el = canvas.current;
     const ctx = el.getContext('2d');
     const ripples = [];
@@ -52,10 +54,27 @@ export default function Ripples({ enabled }) {
       if (!raf) raf = requestAnimationFrame(frame);
     };
 
-    window.addEventListener('pointermove', onMove, { passive: true });
+    /* 鼓点：在月亮碎光带下方荡开一圈更大的涟漪 */
+    const offBeat = onBeat((strength) => {
+      const g = document.querySelector('.sea__glitter');
+      const rect = el.getBoundingClientRect();
+      if (!g || !rect.height) return;
+      const gx = g.getBoundingClientRect();
+      ripples.push({
+        x: gx.left + gx.width / 2 - rect.left + (Math.random() - 0.5) * gx.width * 0.4,
+        y: rect.height * (0.12 + Math.random() * 0.35),
+        t: performance.now(),
+        depth: 0.9 + strength,
+      });
+      if (ripples.length > 18) ripples.shift();
+      if (!raf) raf = requestAnimationFrame(frame);
+    });
+
+    if (fine) window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('resize', resize);
     return () => {
       cancelAnimationFrame(raf);
+      offBeat();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('resize', resize);
     };
