@@ -76,12 +76,12 @@ function Panel({ section, index, ring, px, py, active, route, reduce, blur, load
         </motion.div>
       )}
       {load && Scene && (
-        <motion.div className="layer layer--scene" style={s(scene, true)} aria-hidden="true">
+        <motion.div className="layer layer--scene" style={s(scene)} aria-hidden="true">
           <Scene figure={section.character.src} carriage={images.carriage} school={images.schoolSeasons} persona={personaReady ? images.persona : null} />
         </motion.div>
       )}
       {load && !section.inScene && (
-        <motion.div className="layer layer--figure" style={s(figure, true)} aria-hidden="true">
+        <motion.div className="layer layer--figure" style={s(figure)} aria-hidden="true">
           <picture>
             <source media="(max-width: 760px), (max-width: 1100px) and (orientation: portrait)" srcSet={section.character.mobile} />
             <img className="figure" src={section.character.src} alt="" decoding="async" draggable="false" />
@@ -142,7 +142,8 @@ export default function Stage({ ring, route, reduce, settled }) {
   });
   const glitter = useRef(null);
   const onGeometry = useCallback((cx) => {
-    if (glitter.current) glitter.current.style.left = `${cx.toFixed(1)}px`;
+    /* 用 transform 移动碎光带，不改 left，避免每帧重新排版 60 段碎光 */
+    if (glitter.current) glitter.current.style.transform = `translate3d(${cx.toFixed(1)}px, 0, 0)`;
   }, []);
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);

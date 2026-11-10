@@ -4,7 +4,7 @@ import { images, sections } from '../data/sections.js';
 import { useDarkHour } from '../lib/darkHour.js';
 import { STEP, geom, mod, updateGeom } from '../lib/ring.js';
 import { cycleOfWaxing, litOf, phaseName } from '../lib/moon.js';
-import { dreamHour, homeCycle } from '../lib/sky.js';
+import { dreamHour, homeCycle, useDream } from '../lib/sky.js';
 
 /* 全站共享的月相钟。位置、大小、月相、指针都由环形轨道的角度插值得出：
    转场时月亮滑向新位置，月相连续盈亏，分针快进一圈。所有更新直接写 DOM，不触发 React 重渲染。 */
@@ -167,6 +167,11 @@ export default function MoonClock({ ring, settled, reduce, onGeometry }) {
   };
 
   useMotionValueEvent(ring, 'change', draw);
+  /* 拖动首页时针时立刻重画，不等每秒一次的走针 */
+  const dreamState = useDream();
+  useEffect(() => {
+    draw();
+  }, [dreamState]); // eslint-disable-line react-hooks/exhaustive-deps
   useMotionValueEvent(spin, 'change', draw);
 
   useEffect(() => {

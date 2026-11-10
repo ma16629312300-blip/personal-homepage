@@ -34,6 +34,8 @@ function Home({ section }) {
   const dark = useDarkHour();
   /* 拖动时针：把首页时钟拨到几点，天空就变成几点的颜色；拨过零点进入影时间。只点一下仍是原来的"拨到零点"。 */
   const drag = useRef(null);
+  /* 拖动结束后紧跟着的那次 click 不能再当成"点一下"，否则刚进入的影时间会被立刻关掉 */
+  const swallowClick = useRef(false);
   const angleAt = (e) => {
     const m = document.querySelector('.moon')?.getBoundingClientRect();
     if (!m) return 0;
@@ -63,6 +65,7 @@ function Home({ section }) {
     /* 顺时针拨过零点：进入影时间 */
     if (delta > 0 && Math.floor(next / 24) > Math.floor(d.h / 24)) {
       drag.current = null;
+      swallowClick.current = true;
       setDream({ hour: 0 });
       bond('dream');
       dark.enterNow();
@@ -75,11 +78,12 @@ function Home({ section }) {
     const d = drag.current;
     if (d?.moved) {
       bond('dream');
-      d.suppress = true;
-      window.setTimeout(() => {
-        drag.current = null;
-      }, 0);
-    } else drag.current = null;
+      swallowClick.current = true;
+    }
+    drag.current = null;
+    window.setTimeout(() => {
+      swallowClick.current = false;
+    }, 400);
     e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
   return (
@@ -93,7 +97,8 @@ function Home({ section }) {
         onPointerUp={onUp}
         onPointerCancel={onUp}
         onClick={(e) => {
-          if (drag.current?.suppress) {
+          if (swallowClick.current) {
+            swallowClick.current = false;
             e.preventDefault();
             return;
           }
