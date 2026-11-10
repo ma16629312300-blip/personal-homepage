@@ -110,6 +110,20 @@ const SOUNDS = {
     tone(a, { type: 'sine', from: 784, dur: 0.3, gain: 0.05, delay: 1.25 });
     noise(a, { dur: 0.45, from: 3000, to: 800, q: 1, gain: 0.035, delay: 1.45 });
   },
+  /* 列车离站：关门提示音、气动关门、加速远去 */
+  trainDepart(a) {
+    tone(a, { type: 'sine', from: 784, dur: 0.2, gain: 0.05 });
+    tone(a, { type: 'sine', from: 988, dur: 0.3, gain: 0.05, delay: 0.18 });
+    noise(a, { dur: 0.35, from: 800, to: 3000, q: 1, gain: 0.03, delay: 0.2 });
+    noise(a, { dur: 1.1, from: 1400, to: 200, q: 0.7, gain: 0.06, delay: 1.1 });
+    tone(a, { type: 'sawtooth', from: 50, to: 100, dur: 1, gain: 0.025, delay: 1.1 });
+  },
+  /* 车门打开：气动声加一点外面的风 */
+  doorOpen(a) {
+    tone(a, { type: 'sine', from: 988, dur: 0.18, gain: 0.04 });
+    noise(a, { dur: 0.45, from: 3000, to: 800, q: 1, gain: 0.035, delay: 0.5 });
+    noise(a, { dur: 1.2, from: 400, to: 1200, q: 0.6, gain: 0.03, delay: 0.8 });
+  },
   /* 石子落水：短促的"扑通"加一点水声 */
   plop(a) {
     tone(a, { type: 'sine', from: 520, to: 110, dur: 0.16, gain: 0.08 });

@@ -19,6 +19,7 @@ import { tr, useLang } from './lib/i18n.js';
 import Guide from './components/Guide.jsx';
 import Meteors from './components/Meteors.jsx';
 import TrainArrive from './components/TrainArrive.jsx';
+import Cursor from './components/Cursor.jsx';
 import { installMagnet } from './lib/magnet.js';
 import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
@@ -47,9 +48,9 @@ export default function App() {
   const [touring, setTouring] = useState(false);
   const [record, setRecord] = useState(false);
   const [photo, setPhoto] = useState(false);
-  const [train, setTrain] = useState(0);
+  const [train, setTrain] = useState(null);
   const prevSection = useRef(route.section);
-  const endTrain = useCallback(() => setTrain(0), []);
+  const endTrain = useCallback(() => setTrain(null), []);
   const lang = useLang();
   const touringRef = useRef(false);
 
@@ -182,17 +183,25 @@ export default function App() {
       finish();
       return;
     }
-    /* 首页 → 个人简介：列车进站的专属转场 */
-    if (prevSection.current === 'home' && route.section === 'about' && intro === 'done') {
-      /* 列车停在首页的海边；等镜头推到车门特写、画面被车门挡住时，再瞬间切到车厢，开门后露出来 */
-      setTrain((n) => n + 1);
-      sfx('train');
+    /* 叙事化转场：首页 → 简介是列车进站，简介 → 首页是列车离站，简介 → 项目是走出车门。
+       画面被车门挡住的那一刻，背后瞬间切到目标页 */
+    const prev = prevSection.current;
+    const kind =
+      intro !== 'done' ? null
+        : prev === 'home' && route.section === 'about' ? 'arrive'
+          : prev === 'about' && route.section === 'home' ? 'depart'
+            : prev === 'about' && route.section === 'projects' ? 'exit'
+              : null;
+    if (kind) {
+      const SWITCH = { arrive: 1300, depart: 620, exit: 520 };
+      setTrain({ n: Date.now(), kind });
+      sfx(kind === 'arrive' ? 'train' : kind === 'depart' ? 'trainDepart' : 'doorOpen');
       anim.current?.stop();
-      lastNav.current = Date.now() + 1200;
+      lastNav.current = Date.now() + SWITCH[kind];
       const id = window.setTimeout(() => {
         ring.set(next);
         finish();
-      }, 1300);
+      }, SWITCH[kind]);
       return () => window.clearTimeout(id);
     }
     sfx('whoosh');
@@ -448,6 +457,12 @@ export default function App() {
         </div>
         {!dark && <Dream />}
         {flash > 0 && <div key={flash} className="dark-flash" aria-hidden="true" />}
+        {flash > 0 && !reduce && (
+          <div key={`scan-${flash}`} className="dark-scan" aria-hidden="true">
+            <span className="dark-scan__band" />
+          </div>
+        )}
+        <Cursor />
         {evoke > 0 && !reduce && <EvokeCrack key={`crack-${evoke}`} />}
         {summoned && summonWho && !reduce && <SummonGuardian key={`g-${evoke}`} guardian={guardians[summonWho]} />}
         {summoned && <SummonLabel key={`label-${evoke}`} guardian={summonWho ? guardians[summonWho] : null} />}
@@ -465,7 +480,7 @@ export default function App() {
         {record && <BondRecord onClose={() => setRecord(false)} />}
         {intro === 'done' && <Guide />}
         {intro === 'done' && <Meteors />}
-        {train > 0 && <TrainArrive key={train} onDone={endTrain} />}
+        {train && <TrainArrive key={train.n} kind={train.kind} onDone={endTrain} />}
         {photo && (
           <p className="photo-hint" aria-live="polite">
             {tr('拍照模式 · 点击任意处退出')}

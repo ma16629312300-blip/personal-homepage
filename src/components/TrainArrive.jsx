@@ -11,11 +11,13 @@ const DOOR_Y = 0.73; // 车门中心的纵向位置（占图高）
 const DOOR_H = 0.24; // 车门高度（占图高）
 const RATIO = 724 / 2172;
 
-export default function TrainArrive({ onDone }) {
+const LENGTH = { arrive: 2500, depart: 2300, exit: 1900 };
+
+export default function TrainArrive({ kind = 'arrive', onDone }) {
   useEffect(() => {
-    const id = window.setTimeout(onDone, 2500);
+    const id = window.setTimeout(onDone, LENGTH[kind]);
     return () => window.clearTimeout(id);
-  }, [onDone]);
+  }, [onDone, kind]);
 
   const vars = useMemo(() => {
     const w = window.innerWidth;
@@ -35,10 +37,10 @@ export default function TrainArrive({ onDone }) {
   }, []);
 
   return (
-    <div className="train" style={vars} aria-hidden="true">
+    <div className="train" data-kind={kind} style={vars} aria-hidden="true">
       <div className="train__dim" />
-      <div className="train__streaks" />
-      <img className="train__wide" src={images.monorail} alt="" draggable="false" />
+      {kind !== 'exit' && <div className="train__streaks" />}
+      {kind !== 'exit' && <img className="train__wide" src={images.monorail} alt="" draggable="false" />}
       <div className="train__close">
         <span className="train__wall train__wall--l" />
         <span className="train__wall train__wall--r" />
