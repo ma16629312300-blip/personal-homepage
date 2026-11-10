@@ -443,7 +443,7 @@ export default function App() {
 
   return (
     <DarkHourContext.Provider value={darkValue}>
-      <div className="app" data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-summon-who={summonWho || 'persona'} data-velvet={velvetOpen} data-sky={world.sky} data-season={world.season} data-lunar={world.lunar} data-touring={touring} data-weather={world.weather} data-festival={world.festival} data-photo={photo} lang={lang === 'en' ? 'en' : 'zh-CN'}>
+      <div className="app" data-train={train?.kind} data-section={route.section} data-settled={settled === route.section} data-dark-hour={dark} data-intro={intro} data-summon={summoned} data-summon-who={summonWho || 'persona'} data-velvet={velvetOpen} data-sky={world.sky} data-season={world.season} data-lunar={world.lunar} data-touring={touring} data-weather={world.weather} data-festival={world.festival} data-photo={photo} lang={lang === 'en' ? 'en' : 'zh-CN'}>
         <Stage ring={ring} route={route} reduce={reduce} settled={settled === route.section ? settled : null} />
         <SideNav activeId={route.section} />
         <Calendar onRecord={() => setRecord(true)} />

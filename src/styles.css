@@ -585,6 +585,11 @@ button { font: inherit; color: inherit; }
 .panel[data-active='true'] .railing__rail,
 .panel[data-active='true'] .railing__top,
 .panel[data-active='true'] .railing__glint { transform: none; transition: transform 0.9s var(--ease-out) 0.55s; }
+/* 从天台铁门进来时，栏杆等穿门镜头快结束（约 1.3 秒）再长出来，否则会在转场画面后面悄悄长完 */
+.app[data-train='roof'] .panel[data-active='true'] .railing__post { transition-delay: calc(1.25s + var(--i) * 0.035s); }
+.app[data-train='roof'] .panel[data-active='true'] .railing__rail,
+.app[data-train='roof'] .panel[data-active='true'] .railing__top,
+.app[data-train='roof'] .panel[data-active='true'] .railing__glint { transition-delay: 1.3s; }
 .clouds { position: absolute; left: 40vw; top: 8vh; width: 54vw; height: 34vh; overflow: hidden; pointer-events: none; }
 .clouds i {
   position: absolute; left: 0; height: 6px; width: 30%; background: var(--ivory); opacity: 0.55;
