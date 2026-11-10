@@ -22,6 +22,7 @@ import TrainArrive from './components/TrainArrive.jsx';
 import RoofDoor from './components/RoofDoor.jsx';
 import Cursor from './components/Cursor.jsx';
 import { installMagnet } from './lib/magnet.js';
+import { installChromeVars } from './lib/chrome.js';
 import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
 import Dream from './components/Dream.jsx';
@@ -370,6 +371,7 @@ export default function App() {
 
   /* 电脑上的磁吸按钮 */
   useEffect(() => installMagnet(), []);
+  useEffect(() => installChromeVars(), []);
 
   /* 标签页：图标是今天的月相，离开时标题挽留一下 */
   useEffect(() => {

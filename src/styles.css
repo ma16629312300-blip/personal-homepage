@@ -2238,3 +2238,60 @@ button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: un
 }
 @keyframes roof-door-shade { 0%, 25% { opacity: 0; } 46%, 100% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .roof { display: none; } }
+
+/* ============================================================
+   设计精修（桌面与横屏平板）：
+   1. 竖排大标题与正文避让左上日历、左下导航，尺寸按可用高度自动收放
+   2. 首页大字让出日历位置
+   3. 导航：中文副标签对齐成一列，背后垫一层暗色光晕，和场景（栏杆、海面）分层
+   4. 个人项目空状态做成正式的"筹备中"卡片
+   ============================================================ */
+@media (min-width: 761px) and (orientation: landscape), (min-width: 1101px) {
+  .content--projects, .content--playground {
+    padding-top: max(16vh, calc(var(--hud-b, 11rem) + 1.75rem));
+  }
+  /* 联系我：保持原高度（按钮要落在栏杆上方），改为整体右移避开日历 */
+  .content--contact { padding-left: 31vw; padding-right: 40vw; }
+  /* 天台栏杆左端渐隐，不穿过导航 */
+  .railing { -webkit-mask-image: linear-gradient(to right, transparent 0 10vw, #000 21vw); mask-image: linear-gradient(to right, transparent 0 10vw, #000 21vw); }
+  .panel-head__title {
+    letter-spacing: 0.12em;
+    font-size: max(2.6rem, min(clamp(3.4rem, 10.5vh, 8.5rem), calc((var(--nav-t, 100vh) - var(--hud-b, 0px) - 3.4rem) / 4.5)));
+  }
+  /* 四页竖排标题统一同一尺寸（个人简介在右侧，不受导航限制，但保持一致更整齐） */
+
+  /* 首页大字：宽度给 16.5vw，但屏幕矮时按"日历底边到导航顶边"的空间收小，保证标语不撞导航 */
+  .panel--home { --home-f: max(6rem, min(16.5vw, 20rem, calc((var(--nav-t, 100vh) - var(--hud-b, 11rem) - 6vh - 3.4rem) / 1.12))); }
+  .panel--home .word { top: calc(6vh + max(0px, var(--hud-b, 11rem) - 2.75rem)); font-size: var(--home-f); }
+  .content--home { padding-top: calc(6vh + max(0px, var(--hud-b, 11rem) - 2.75rem) + 1.12 * var(--home-f)); }
+
+  .side-nav__item { grid-template-columns: 2.4rem 1fr auto; }
+  .side-nav__zh { justify-self: end; text-align: right; }
+  .side-nav::before {
+    content: ''; position: absolute; z-index: -1; pointer-events: none;
+    left: calc(-1 * var(--gutter)); right: -9rem; top: -5rem; bottom: -5.5vh;
+    background: radial-gradient(ellipse 70% 75% at 0% 100%, var(--nav-scrim, rgba(2, 10, 50, 0.7)), transparent 72%);
+  }
+  .app[data-dark-hour='true'] .side-nav { --nav-scrim: rgba(1, 10, 6, 0.75); }
+
+  .empty-state {
+    position: relative; margin-top: 2.2rem; padding: 1.5rem 1.8rem 1.6rem; border: 1px solid rgba(244, 245, 241, 0.4);
+    background: linear-gradient(135deg, rgba(2, 10, 50, 0.86), rgba(12, 32, 130, 0.72));
+    box-shadow: 0.5rem 0.5rem 0 var(--coral);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.4rem), calc(100% - 1.4rem) 100%, 0 100%);
+  }
+  .empty-state::before {
+    content: 'COMING SOON'; display: block; margin-bottom: 0.5rem;
+    font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: var(--fs-xl); line-height: 1; letter-spacing: 0.02em;
+    color: transparent; -webkit-text-stroke: 1px rgba(244, 245, 241, 0.75);
+  }
+  .empty-state::after {
+    content: ''; display: block; height: 4px; margin-top: 0.9rem;
+    background: repeating-linear-gradient(-45deg, var(--coral) 0 8px, transparent 8px 14px);
+    background-size: 200% 100%; animation: empty-stripes 2.4s linear infinite;
+  }
+  .empty-state__text { opacity: 0.8; font-size: var(--fs-sm); letter-spacing: 0.06em; }
+  .pg-card__teaser { opacity: 1; color: rgba(244, 245, 241, 0.92); }
+}
+@keyframes empty-stripes { to { background-position: -28px 0; } }
+@media (prefers-reduced-motion: reduce) { .empty-state::after { animation: none; } }
