@@ -46,7 +46,7 @@ export const sections = [
     number: '00',
     title: '首页',
     label: 'HOME',
-    character: { src: asset('char-floating'), mobile: asset('char-halfbody'), alt: '' },
+    character: { src: asset('char-floating'), mobile: asset('char-halfbody'), alt: '', body: asset('char-floating-body'), hair: asset('char-floating-hair') },
   },
   {
     id: 'about',

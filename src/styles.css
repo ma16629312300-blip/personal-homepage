@@ -236,6 +236,28 @@ button { font: inherit; color: inherit; }
   animation: float 7s ease-in-out infinite alternate;
 }
 @keyframes float { from { translate: 0 0; rotate: -0.6deg; } to { translate: 0 -1.8vh; rotate: 0.8deg; } }
+/* 首页主角分层：整体漂浮 + 呼吸（scale 单独成一条动画，和 float 的 translate/rotate 互不覆盖），
+   飘发层以头顶发根为轴，像在无重力里被风轻轻托着 */
+.figure--layered { aspect-ratio: 887 / 1774; transform-origin: 50% 92%; }
+.panel--home .figure--layered { animation: float 7s ease-in-out infinite alternate, breathe 3.6s ease-in-out infinite alternate; }
+.figure--layered picture, .figure__body { display: block; width: 100%; height: 100%; user-select: none; }
+.figure__hair {
+  position: absolute; inset: 0; width: 100%; height: 100%; user-select: none;
+  transform-origin: 56% 9%; animation: hair-drift 5.2s ease-in-out infinite; will-change: transform;
+}
+@keyframes breathe { from { scale: 1 1; } to { scale: 1.004 1.009; } }
+@keyframes hair-drift {
+  0%, 100% { transform: rotate(0deg) skewX(0deg) scale(1); }
+  22% { transform: rotate(1.6deg) skewX(-1.8deg) scale(1.012, 0.995); }
+  48% { transform: rotate(-0.7deg) skewX(1.1deg) scale(0.998, 1.006); }
+  71% { transform: rotate(1deg) skewX(-0.8deg) scale(1.008, 0.998); }
+}
+@media (max-width: 760px), (max-width: 1100px) and (orientation: portrait) {
+  .figure--layered { aspect-ratio: auto; }
+  .figure--layered picture, .figure__body { height: auto; }
+  .figure__hair { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .figure__hair, .panel--home .figure--layered { animation: none; } }
 .panel--home .blade {
   right: 0; bottom: 0; width: 64vw; height: 30vh; background: var(--ivory);
   clip-path: polygon(100% 18%, 100% 34%, 14% 100%, 0 100%);

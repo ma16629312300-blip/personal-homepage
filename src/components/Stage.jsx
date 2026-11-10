@@ -82,10 +82,21 @@ function Panel({ section, index, ring, px, py, active, route, reduce, blur, load
       )}
       {load && !section.inScene && (
         <motion.div className="layer layer--figure" style={s(figure)} aria-hidden="true">
-          <picture>
-            <source media="(max-width: 760px), (max-width: 1100px) and (orientation: portrait)" srcSet={section.character.mobile} />
-            <img className="figure" src={section.character.src} alt="" decoding="async" draggable="false" />
-          </picture>
+          {section.character.hair ? (
+            /* 分层人物：身体层呼吸，飘发层单独随风摆动 */
+            <div className="figure figure--layered">
+              <picture>
+                <source media="(max-width: 760px), (max-width: 1100px) and (orientation: portrait)" srcSet={section.character.mobile} />
+                <img className="figure__body" src={section.character.body} alt="" decoding="async" draggable="false" />
+              </picture>
+              <img className="figure__hair" src={section.character.hair} alt="" decoding="async" draggable="false" />
+            </div>
+          ) : (
+            <picture>
+              <source media="(max-width: 760px), (max-width: 1100px) and (orientation: portrait)" srcSet={section.character.mobile} />
+              <img className="figure" src={section.character.src} alt="" decoding="async" draggable="false" />
+            </picture>
+          )}
         </motion.div>
       )}
       <motion.div className="layer layer--blade" style={s(blade)} aria-hidden="true">
