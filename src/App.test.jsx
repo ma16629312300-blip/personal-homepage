@@ -238,4 +238,10 @@ describe('tiaotiao 个人空间', () => {
     expect(within(room).getByRole('button', { name: /THE WORLD/ })).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem('tiaotiao.fusion.v1'))).toEqual(['home+playground']);
   });
+
+  it('逐字动画的标题对读屏软件仍是完整的一句', async () => {
+    render(<App />);
+    await go('#about');
+    expect(screen.getByRole('heading', { level: 1, name: '个人简介' })).toBeInTheDocument();
+  });
 });

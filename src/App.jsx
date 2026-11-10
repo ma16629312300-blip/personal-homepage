@@ -18,6 +18,7 @@ import { updateAmbient } from './lib/ambient.js';
 import { tr, useLang } from './lib/i18n.js';
 import Guide from './components/Guide.jsx';
 import Meteors from './components/Meteors.jsx';
+import { installMagnet } from './lib/magnet.js';
 import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
 import Dream from './components/Dream.jsx';
@@ -334,6 +335,9 @@ export default function App() {
     const id = window.setTimeout(() => notice(`${tr('今天是')}${tr(FESTIVAL_NAMES[world.festival])}${tr('。')}`), 2400);
     return () => window.clearTimeout(id);
   }, [world.festival]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* 电脑上的磁吸按钮 */
+  useEffect(() => installMagnet(), []);
 
   /* 标签页：图标是今天的月相，离开时标题挽留一下 */
   useEffect(() => {

@@ -4,7 +4,7 @@ import { images, sections } from '../data/sections.js';
 import { useDarkHour } from '../lib/darkHour.js';
 import { STEP, geom, mod, updateGeom } from '../lib/ring.js';
 import { cycleOfWaxing, litOf, phaseName } from '../lib/moon.js';
-import { homeCycle } from '../lib/sky.js';
+import { dreamHour, homeCycle } from '../lib/sky.js';
 
 /* 全站共享的月相钟。位置、大小、月相、指针都由环形轨道的角度插值得出：
    转场时月亮滑向新位置，月相连续盈亏，分针快进一圈。所有更新直接写 DOM，不触发 React 重渲染。 */
@@ -93,6 +93,8 @@ export default function MoonClock({ ring, settled, reduce, onGeometry }) {
 
   const timeFor = (id) => {
     if (id === 'home') {
+      const dh = dreamHour();
+      if (dh != null) return toAngles(Math.floor(dh), (dh % 1) * 60, 0);
       const d = new Date();
       return toAngles(d.getHours(), d.getMinutes(), d.getSeconds());
     }

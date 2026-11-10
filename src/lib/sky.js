@@ -19,6 +19,12 @@ const FORCE = {
   festival: pick('festival', ['newyear', 'springfest', 'midautumn', 'qixi', 'christmas']),
 };
 
+export function skyOfHour(t) {
+  if (t >= 5 && t < 7) return 'dawn';
+  if (t >= 7 && t < 16) return 'day';
+  if (t >= 16 && t < 18.5) return 'dusk';
+  return 'night';
+}
 export function skyOf(date) {
   const t = date.getHours() + date.getMinutes() / 60;
   if (t >= 5 && t < 7) return 'dawn';
@@ -118,7 +124,7 @@ const DREAM_VALUES = {
 function loadDream() {
   try {
     const raw = JSON.parse(window.sessionStorage.getItem(DREAM_KEY) || '{}');
-    return Object.fromEntries(Object.entries(raw).filter(([k, v]) => DREAM_VALUES[k]?.includes(v)));
+    return Object.fromEntries(Object.entries(raw).filter(([k, v]) => DREAM_VALUES[k]?.includes(v) || (k === 'hour' && typeof v === 'number')));
   } catch {
     return {};
   }
@@ -128,6 +134,10 @@ const dreamListeners = new Set();
 export function setDream(patch) {
   const next = patch === null ? {} : { ...dream, ...patch };
   Object.keys(next).forEach((k) => {
+    if (k === 'hour') {
+      if (typeof next.hour !== 'number' || !Number.isFinite(next.hour)) delete next.hour;
+      return;
+    }
     if (!DREAM_VALUES[k]?.includes(next[k])) delete next[k];
   });
   dream = next;
@@ -158,6 +168,9 @@ export function useDream() {
 }
 
 /* 首页月亮的周期位置：梦里指定了满月 / 新月就用它，否则是今天真实的月相 */
+/* 拖动首页时针时的梦中时刻（0–24 小时，可能带小数） */
+export const dreamHour = () => (typeof dream.hour === 'number' ? dream.hour : null);
+
 export function homeCycle(date = new Date()) {
   const f = FORCE.festival ?? dream.festival ?? festivalOf(date);
   const m = FORCE.moon ?? dream.moon ?? (f === 'midautumn' ? 'full' : null);
@@ -175,13 +188,13 @@ export function useWorld() {
   const season = FORCE.season ?? dr.season ?? (festival === 'christmas' ? 'winter' : seasonOf(d));
   return {
     now: d,
-    sky: FORCE.sky ?? dr.sky ?? skyOf(d),
+    sky: FORCE.sky ?? dr.sky ?? (typeof dr.hour === 'number' ? skyOfHour(dr.hour) : skyOf(d)),
     season,
     lunar,
     weather: FORCE.weather ?? dr.weather ?? weatherOf(d),
     festival,
     dreaming: Object.keys(dr).length > 0,
-    skyForced: Boolean(FORCE.sky ?? dr.sky),
+    skyForced: Boolean(FORCE.sky ?? dr.sky) || typeof dr.hour === 'number',
     moonForced: Boolean(FORCE.moon ?? dr.moon) || festival === 'midautumn',
   };
 }

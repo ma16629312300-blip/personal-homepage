@@ -101,6 +101,11 @@ const SOUNDS = {
     noise(a, { dur: 1.6, from: 200, to: 3200, q: 0.7, gain: 0.05, delay: 0.2 });
     tone(a, { type: 'sine', from: 330, to: 660, dur: 1.4, gain: 0.03, delay: 0.5 });
   },
+  /* 石子落水：短促的"扑通"加一点水声 */
+  plop(a) {
+    tone(a, { type: 'sine', from: 520, to: 110, dur: 0.16, gain: 0.08 });
+    noise(a, { dur: 0.35, from: 900, to: 300, q: 1, gain: 0.04, delay: 0.03 });
+  },
   /* 合成：上升的嗡鸣、一记钟响、散开的亮音 */
   fusion(a) {
     tone(a, { type: 'sawtooth', from: 80, to: 320, dur: 1.5, gain: 0.03 });

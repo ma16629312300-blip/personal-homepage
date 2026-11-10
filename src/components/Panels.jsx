@@ -10,7 +10,9 @@ import { bond } from '../lib/bond.js';
 import { BlueDoor, HiddenCard } from './Arcana.jsx';
 import { DailyTarot, Stats } from './Daily.jsx';
 import { useName } from '../lib/name.js';
+import { dreamHour, setDream } from '../lib/sky.js';
 import { tr } from '../lib/i18n.js';
+import Kinetic from './Kinetic.jsx';
 
 function Heading({ section, children }) {
   return (
@@ -21,7 +23,7 @@ function Heading({ section, children }) {
         <span className="arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{tr(section.arcana[2])}</i></span>
       </p>
       <h1 id={`heading-${section.id}`} tabIndex={-1} className="panel-head__title">
-        <span className="reveal">{tr(section.title)}</span>
+        <Kinetic text={tr(section.title)} />
       </h1>
       {children}
     </header>
@@ -30,21 +32,82 @@ function Heading({ section, children }) {
 
 function Home({ section }) {
   const dark = useDarkHour();
+  /* 拖动时针：把首页时钟拨到几点，天空就变成几点的颜色；拨过零点进入影时间。只点一下仍是原来的"拨到零点"。 */
+  const drag = useRef(null);
+  const angleAt = (e) => {
+    const m = document.querySelector('.moon')?.getBoundingClientRect();
+    if (!m) return 0;
+    const a = Math.atan2(e.clientX - (m.left + m.width / 2), -(e.clientY - (m.top + m.height / 2)));
+    return ((a * 180) / Math.PI + 360) % 360;
+  };
+  const onDown = (e) => {
+    if (dark.active || e.button > 0) return;
+    const dh = dreamHour();
+    const now = new Date();
+    drag.current = { x: e.clientX, y: e.clientY, moved: false, h: dh ?? now.getHours() + now.getMinutes() / 60, id: e.pointerId };
+  };
+  const onMove = (e) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.moved) {
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < 8) return;
+      d.moved = true;
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    }
+    const target = angleAt(e) / 30;
+    let delta = target - (((d.h % 12) + 12) % 12);
+    if (delta > 6) delta -= 12;
+    if (delta < -6) delta += 12;
+    const next = d.h + delta;
+    if (Math.floor(next) !== Math.floor(d.h)) sfx('text');
+    /* 顺时针拨过零点：进入影时间 */
+    if (delta > 0 && Math.floor(next / 24) > Math.floor(d.h / 24)) {
+      drag.current = null;
+      setDream({ hour: 0 });
+      bond('dream');
+      dark.enterNow();
+      return;
+    }
+    d.h = next;
+    setDream({ hour: ((next % 24) + 24) % 24 });
+  };
+  const onUp = (e) => {
+    const d = drag.current;
+    if (d?.moved) {
+      bond('dream');
+      d.suppress = true;
+      window.setTimeout(() => {
+        drag.current = null;
+      }, 0);
+    } else drag.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  };
   return (
     <div className="content content--home">
       <button
         type="button"
         className="clock-hit"
         aria-label={tr(dark.active ? '已在影时间' : '把时钟拨到零点')}
-        onClick={dark.active ? dark.exit : dark.enter}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+        onClick={(e) => {
+          if (drag.current?.suppress) {
+            e.preventDefault();
+            return;
+          }
+          if (dark.active) dark.exit();
+          else dark.enter();
+        }}
       >
-        <span className="clock-hit__hint" aria-hidden="true">{tr(dark.active ? '离开影时间' : '拨到零点？')}</span>
+        <span className="clock-hit__hint" aria-hidden="true">{tr(dark.active ? '离开影时间' : '拖动时针 · 或点我拨到零点')}</span>
       </button>
       <h1 id={`heading-${section.id}`} tabIndex={-1} className="visually-hidden">
         {tr('tiaotiao 的个人空间')}
       </h1>
       <p className="home-line">
-        <span className="reveal">{tr('河北工业大学北辰最忧郁之人')}</span>
+        <Kinetic text={tr('河北工业大学北辰最忧郁之人')} variant="slide" />
       </p>
       <p className="home-arcana arcana-tag">{section.arcana[0]} · {section.arcana[1]} <i>{tr(section.arcana[2])}</i></p>
     </div>

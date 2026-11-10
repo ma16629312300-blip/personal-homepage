@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { onBeat } from '../lib/pulse.js';
+import { sfx } from '../lib/sfx.js';
 
 /* 水面涟漪：鼠标划过海面时荡开扁平的椭圆波纹。只在精确指针设备上启用，空闲时不占用动画帧。 */
 export default function Ripples({ enabled, rain = false }) {
@@ -27,9 +28,24 @@ export default function Ripples({ enabled, rain = false }) {
       for (let i = ripples.length - 1; i >= 0; i -= 1) {
         const r = ripples[i];
         const k = (now - r.t) / 1600;
+        if (k < 0) continue;
         if (k >= 1) {
           ripples.splice(i, 1);
           continue;
+        }
+        /* 石子落水：先溅起几滴水花，再荡开三圈涟漪 */
+        if (r.drops) {
+          const kd = (now - r.t) / 700;
+          if (kd < 1) {
+            ctx.fillStyle = `rgba(244, 245, 241, ${(0.9 * (1 - kd)).toFixed(3)})`;
+            r.drops.forEach((d) => {
+              const x = r.x + d.vx * kd * 60 * r.depth;
+              const y = r.y - (d.vy * kd - 1.6 * kd * kd) * 40 * r.depth;
+              ctx.beginPath();
+              ctx.ellipse(x, y, 1.6 * r.depth + 0.6, 2.4 * r.depth + 0.8, 0, 0, Math.PI * 2);
+              ctx.fill();
+            });
+          }
         }
         const rx = 14 + k * 120 * r.depth;
         ctx.strokeStyle = `rgba(244, 245, 241, ${(0.55 * (1 - k)).toFixed(3)})`;
@@ -86,11 +102,31 @@ export default function Ripples({ enabled, rain = false }) {
       }, fine ? 90 : 200);
     }
 
+    /* 点击海面扔一颗石子：点在按钮、文字框等可交互的东西上时不算 */
+    const onClick = (e) => {
+      if (e.target?.closest?.('a, button, input, textarea, label, [role="dialog"], .dlg, .pg-card, .stats, .about-tags, .contact-email')) return;
+      const rect = el.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      if (y < 6 || y > rect.height || e.clientX < rect.left || e.clientX > rect.right) return;
+      const depth = 0.5 + (y / rect.height) * 1.1;
+      const t = performance.now();
+      const x = e.clientX - rect.left;
+      const drops = Array.from({ length: 9 }, () => ({ vx: (Math.random() - 0.5) * 2.2, vy: 1.8 + Math.random() * 1.6 }));
+      ripples.push({ x, y, t, depth: depth * 1.3, drops });
+      ripples.push({ x, y, t: t + 160, depth });
+      ripples.push({ x, y, t: t + 340, depth: depth * 0.75 });
+      while (ripples.length > 40) ripples.shift();
+      sfx('plop');
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+    window.addEventListener('click', onClick);
+
     if (fine) window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('resize', resize);
     return () => {
       cancelAnimationFrame(raf);
       window.clearInterval(rainTimer);
+      window.removeEventListener('click', onClick);
       offBeat();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('resize', resize);
