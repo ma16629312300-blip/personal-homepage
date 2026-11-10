@@ -19,6 +19,7 @@ import { tr, useLang } from './lib/i18n.js';
 import Guide from './components/Guide.jsx';
 import Meteors from './components/Meteors.jsx';
 import TrainArrive from './components/TrainArrive.jsx';
+import RoofDoor from './components/RoofDoor.jsx';
 import Cursor from './components/Cursor.jsx';
 import { installMagnet } from './lib/magnet.js';
 import BondRecord from './components/BondRecord.jsx';
@@ -191,11 +192,12 @@ export default function App() {
         : prev === 'home' && route.section === 'about' ? 'arrive'
           : prev === 'about' && route.section === 'home' ? 'depart'
             : prev === 'about' && route.section === 'projects' ? 'exit'
+              : prev === 'playground' && route.section === 'contact' ? 'roof'
               : null;
     if (kind) {
-      const SWITCH = { arrive: 1300, depart: 620, exit: 520 };
+      const SWITCH = { arrive: 1300, depart: 620, exit: 520, roof: 560 };
       setTrain({ n: Date.now(), kind });
-      sfx(kind === 'arrive' ? 'train' : kind === 'depart' ? 'trainDepart' : 'doorOpen');
+      sfx(kind === 'arrive' ? 'train' : kind === 'depart' ? 'trainDepart' : kind === 'roof' ? 'roofDoor' : 'doorOpen');
       anim.current?.stop();
       lastNav.current = Date.now() + SWITCH[kind];
       const id = window.setTimeout(() => {
@@ -480,7 +482,8 @@ export default function App() {
         {record && <BondRecord onClose={() => setRecord(false)} />}
         {intro === 'done' && <Guide />}
         {intro === 'done' && <Meteors />}
-        {train && <TrainArrive key={train.n} kind={train.kind} onDone={endTrain} />}
+        {train && train.kind !== 'roof' && <TrainArrive key={train.n} kind={train.kind} onDone={endTrain} />}
+        {train?.kind === 'roof' && <RoofDoor key={train.n} onDone={endTrain} />}
         {photo && (
           <p className="photo-hint" aria-live="polite">
             {tr('拍照模式 · 点击任意处退出')}

@@ -124,6 +124,13 @@ const SOUNDS = {
     noise(a, { dur: 0.45, from: 3000, to: 800, q: 1, gain: 0.035, delay: 0.5 });
     noise(a, { dur: 1.2, from: 400, to: 1200, q: 0.6, gain: 0.03, delay: 0.8 });
   },
+  /* 天台铁门：脚步、门闩、沉重的铁门推开，外面的风 */
+  roofDoor(a) {
+    [0, 0.18].forEach((d) => tone(a, { type: 'sine', from: 140, to: 90, dur: 0.08, gain: 0.05, delay: d }));
+    tone(a, { type: 'square', from: 420, to: 300, dur: 0.06, gain: 0.03, delay: 0.62 });
+    tone(a, { type: 'sawtooth', from: 70, to: 140, dur: 0.6, gain: 0.03, delay: 0.72 });
+    noise(a, { dur: 1.4, from: 300, to: 1600, q: 0.6, gain: 0.05, delay: 0.85 });
+  },
   /* 石子落水：短促的"扑通"加一点水声 */
   plop(a) {
     tone(a, { type: 'sine', from: 520, to: 110, dur: 0.16, gain: 0.08 });

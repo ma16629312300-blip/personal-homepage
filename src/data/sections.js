@@ -32,6 +32,8 @@ export const images = {
   portrait: asset('portrait'),
   monorail: asset('monorail'),
   trainDoors: asset('train-doors'),
+  stairwell: asset('stairwell'),
+  roofDoor: asset('roof-door'),
   velvet: asset('velvet-room'),
   door: asset('blue-door'),
 };
