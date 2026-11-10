@@ -2137,40 +2137,77 @@ button.cal__bond:hover b, button.cal__bond:focus-visible b { text-decoration: un
 .app[data-photo='true'] .cursor { opacity: 0 !important; }
 @media (pointer: coarse) { .cursor { display: none; } }
 
-/* 天台铁门转场（有趣功能 → 联系我，共 2.3 秒）
-   场景按 16:9 铺满画面；门板盖在门洞上，以左侧门轴转开，门洞里透出后面的天台 */
-.roof { position: fixed; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; perspective: 1400px; }
+/* 天台铁门转场（有趣功能 → 联系我，共 1.6 秒）
+   门板直接从场景图里抠出，和门框像素级对齐；门洞里是后面的真实天台页面。
+   节奏：推镜进场 → 门缝红光一闪 → 门闩一顶、画面一震 → 铁门甩开、月光泼进楼梯间 → 镜头穿门而出 */
+.roof { position: fixed; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; background: #000; animation: roof-bg 1.6s both; }
+@keyframes roof-bg { 0%, 40% { background-color: #000; } 55%, 100% { background-color: transparent; } }
+.roof__cam { position: absolute; inset: 0; animation: roof-shake 1.6s both; }
+@keyframes roof-shake {
+  0%, 24% { transform: none; }
+  25% { transform: translate3d(-5px, 2px, 0); }
+  26.5% { transform: translate3d(4px, -2px, 0); }
+  28% { transform: translate3d(-2px, 1px, 0); }
+  30%, 100% { transform: none; }
+}
 .roof__scene {
   position: absolute; left: 50%; top: 50%; width: max(100vw, 177.7vh); aspect-ratio: 1672 / 941; translate: -50% -50%;
-  transform-origin: 50.06% 43.25%; transform-style: preserve-3d;
-  animation: roof-scene 2.3s both;
+  transform-origin: 50.12% 43.04%; perspective: 1100px; perspective-origin: 50.12% 43.04%;
+  animation: roof-scene 1.6s both; will-change: transform, opacity;
 }
 @keyframes roof-scene {
-  0% { opacity: 0; transform: scale(1.06); }
-  12% { opacity: 1; transform: scale(1); }
-  56% { opacity: 1; transform: scale(1.04); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
-  100% { opacity: 0; transform: scale(4); }
+  0% { opacity: 0; transform: scale(1.18); animation-timing-function: var(--ease-snap); }
+  14% { opacity: 1; transform: scale(1.02); animation-timing-function: linear; }
+  44% { opacity: 1; transform: scale(1.06); animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0); }
+  86% { opacity: 1; transform: scale(5.2); }
+  100% { opacity: 0; transform: scale(6.5); }
 }
-/* 墙面挖掉门洞（偶奇填充的多边形），门打开后门洞里就是后面的页面 */
+/* 墙面挖掉门洞（偶奇填充），门打开后门洞里就是后面的页面 */
 .roof__wall {
   position: absolute; inset: 0; background-size: 100% 100%;
-  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 36.84% 5.1%, 36.84% 81.4%, 63.28% 81.4%, 63.28% 5.1%, 36.84% 5.1%);
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 36.663% 4.676%, 36.663% 81.509%, 63.577% 81.509%, 63.577% 4.676%, 36.663% 4.676%);
 }
+/* 门洞后的月光：门一开就亮，镜头穿过时变成白闪 */
 .roof__light {
-  position: absolute; left: 36.84%; top: 5.1%; width: 26.44%; height: 76.3%; opacity: 0;
-  background: radial-gradient(ellipse at 50% 60%, rgba(220, 232, 255, 0.85), rgba(120, 160, 255, 0.25) 60%, transparent 85%);
-  animation: roof-light 2.3s both;
+  position: absolute; left: 36.663%; top: 4.676%; width: 26.914%; height: 76.833%; opacity: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 55%, #f4f8ff 0%, rgba(190, 215, 255, 0.85) 35%, rgba(90, 140, 255, 0.35) 70%, transparent 100%);
+  animation: roof-light 1.6s both;
 }
-@keyframes roof-light { 0%, 30% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes roof-light { 0%, 27% { opacity: 0; } 40% { opacity: 1; } 62% { opacity: 0.55; } 82% { opacity: 1; } 100% { opacity: 0; } }
+/* 门下缝里的红光：开门前呼吸两下 */
+.roof__seam {
+  position: absolute; left: 36.9%; width: 26.4%; top: 80.6%; height: 1.4%; border-radius: 50%;
+  background: #ff6a55; box-shadow: 0 0 1.4vw 0.4vw rgba(255, 90, 70, 0.75);
+  animation: roof-seam 1.6s both;
+}
+@keyframes roof-seam { 0% { opacity: 0.3; } 10% { opacity: 1; } 17% { opacity: 0.5; } 23% { opacity: 1; } 28%, 100% { opacity: 0; } }
+/* 月光泼到台阶上：从门口向下展开的光楔 */
+.roof__spill {
+  position: absolute; left: 0; right: 0; top: 81.509%; bottom: 0; transform-origin: 50% 0; opacity: 0;
+  clip-path: polygon(36.663% 0, 63.577% 0, 86% 100%, 14% 100%);
+  background: linear-gradient(to bottom, rgba(225, 236, 255, 0.75), rgba(160, 190, 255, 0.15) 85%, transparent);
+  animation: roof-spill 1.6s both;
+}
+@keyframes roof-spill { 0%, 28% { opacity: 0; transform: scaleY(0.2); } 46% { opacity: 1; transform: scaleY(1); } 100% { opacity: 1; transform: scaleY(1); } }
+/* 整个楼梯间被门外的冷光照亮 */
+.roof__wash {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(ellipse 48% 70% at 50.12% 45%, rgba(200, 220, 255, 0.4), rgba(120, 160, 255, 0.12) 55%, transparent 80%);
+  animation: roof-wash 1.6s both;
+}
+@keyframes roof-wash { 0%, 28% { opacity: 0; } 45%, 100% { opacity: 1; } }
 .roof__door {
-  position: absolute; left: 36.84%; top: 5.1%; width: 26.44%; height: 76.3%; background-size: 100% 100%;
-  transform-origin: 0 50%; backface-visibility: hidden;
-  animation: roof-door 2.3s both;
+  position: absolute; left: 36.663%; top: 4.676%; width: 26.914%; height: 76.833%; background-size: 100% 100%;
+  transform-origin: 0 50%; backface-visibility: hidden; will-change: transform;
+  animation: roof-door 1.6s both;
 }
+/* 转开时门板背光变暗 */
+.roof__door::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(4, 8, 40, 0.15), rgba(2, 4, 24, 0.75)); opacity: 0; animation: roof-door-shade 1.6s both; }
 @keyframes roof-door {
-  0%, 28% { transform: rotateY(0); }
-  31% { transform: rotateY(-4deg); }
-  34% { transform: rotateY(-2deg); animation-timing-function: var(--ease-swift); }
-  56%, 100% { transform: rotateY(-108deg); }
+  0%, 24% { transform: rotateY(0); }
+  25.5% { transform: rotateY(6deg); }
+  27.5% { transform: rotateY(3deg); animation-timing-function: cubic-bezier(0.3, 0, 0.1, 1); }
+  48%, 100% { transform: rotateY(84deg); }
 }
+@keyframes roof-door-shade { 0%, 25% { opacity: 0; } 46%, 100% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .roof { display: none; } }

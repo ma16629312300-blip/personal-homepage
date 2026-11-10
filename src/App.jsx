@@ -195,7 +195,7 @@ export default function App() {
               : prev === 'playground' && route.section === 'contact' ? 'roof'
               : null;
     if (kind) {
-      const SWITCH = { arrive: 1300, depart: 620, exit: 520, roof: 560 };
+      const SWITCH = { arrive: 1300, depart: 620, exit: 520, roof: 420 };
       setTrain({ n: Date.now(), kind });
       sfx(kind === 'arrive' ? 'train' : kind === 'depart' ? 'trainDepart' : kind === 'roof' ? 'roofDoor' : 'doorOpen');
       anim.current?.stop();

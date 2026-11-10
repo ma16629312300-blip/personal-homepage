@@ -6,15 +6,20 @@ import { images } from '../data/sections.js';
    门外就是天台的夜空，镜头穿门而出。 */
 export default function RoofDoor({ onDone }) {
   useEffect(() => {
-    const id = window.setTimeout(onDone, 2300);
+    const id = window.setTimeout(onDone, 1600);
     return () => window.clearTimeout(id);
   }, [onDone]);
   return (
     <div className="roof" aria-hidden="true">
-      <div className="roof__scene">
-        <div className="roof__wall" style={{ backgroundImage: `url(${images.stairwell})` }} />
-        <span className="roof__light" />
-        <span className="roof__door" style={{ backgroundImage: `url(${images.roofDoor})` }} />
+      <div className="roof__cam">
+        <div className="roof__scene">
+          <span className="roof__light" />
+          <div className="roof__wall" style={{ backgroundImage: `url(${images.stairwell})` }} />
+          <span className="roof__wash" />
+          <span className="roof__spill" />
+          <span className="roof__seam" />
+          <span className="roof__door" style={{ backgroundImage: `url(${images.roofDoor})` }} />
+        </div>
       </div>
     </div>
   );

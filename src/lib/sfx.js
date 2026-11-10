@@ -126,10 +126,11 @@ const SOUNDS = {
   },
   /* 天台铁门：脚步、门闩、沉重的铁门推开，外面的风 */
   roofDoor(a) {
-    [0, 0.18].forEach((d) => tone(a, { type: 'sine', from: 140, to: 90, dur: 0.08, gain: 0.05, delay: d }));
-    tone(a, { type: 'square', from: 420, to: 300, dur: 0.06, gain: 0.03, delay: 0.62 });
-    tone(a, { type: 'sawtooth', from: 70, to: 140, dur: 0.6, gain: 0.03, delay: 0.72 });
-    noise(a, { dur: 1.4, from: 300, to: 1600, q: 0.6, gain: 0.05, delay: 0.85 });
+    tone(a, { type: 'sine', from: 140, to: 90, dur: 0.08, gain: 0.05 });
+    tone(a, { type: 'square', from: 420, to: 260, dur: 0.05, gain: 0.035, delay: 0.38 });
+    tone(a, { type: 'sine', from: 90, to: 55, dur: 0.18, gain: 0.07, delay: 0.39 });
+    tone(a, { type: 'sawtooth', from: 70, to: 150, dur: 0.4, gain: 0.025, delay: 0.44 });
+    noise(a, { dur: 1.1, from: 300, to: 2200, q: 0.6, gain: 0.055, delay: 0.46 });
   },
   /* 石子落水：短促的"扑通"加一点水声 */
   plop(a) {
