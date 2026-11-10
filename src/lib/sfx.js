@@ -101,6 +101,15 @@ const SOUNDS = {
     noise(a, { dur: 1.6, from: 200, to: 3200, q: 0.7, gain: 0.05, delay: 0.2 });
     tone(a, { type: 'sine', from: 330, to: 660, dur: 1.4, gain: 0.03, delay: 0.5 });
   },
+  /* 列车进站：呼啸 → 刹车 → 开门的两声提示音 */
+  train(a) {
+    noise(a, { dur: 0.9, from: 200, to: 1400, q: 0.7, gain: 0.07 });
+    tone(a, { type: 'sawtooth', from: 90, to: 50, dur: 1, gain: 0.03 });
+    tone(a, { type: 'triangle', from: 2600, to: 2300, dur: 0.4, gain: 0.015, delay: 0.5 });
+    tone(a, { type: 'sine', from: 988, dur: 0.22, gain: 0.05, delay: 1.05 });
+    tone(a, { type: 'sine', from: 784, dur: 0.3, gain: 0.05, delay: 1.25 });
+    noise(a, { dur: 0.45, from: 3000, to: 800, q: 1, gain: 0.035, delay: 1.45 });
+  },
   /* 石子落水：短促的"扑通"加一点水声 */
   plop(a) {
     tone(a, { type: 'sine', from: 520, to: 110, dur: 0.16, gain: 0.08 });

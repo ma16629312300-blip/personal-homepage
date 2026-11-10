@@ -30,6 +30,8 @@ export const images = {
     winter: asset('sakura-branch-winter'),
   },
   portrait: asset('portrait'),
+  monorail: asset('monorail'),
+  trainDoors: asset('train-doors'),
   velvet: asset('velvet-room'),
   door: asset('blue-door'),
 };

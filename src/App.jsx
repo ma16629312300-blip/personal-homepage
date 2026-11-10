@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animate, useMotionValue, useReducedMotion } from 'motion/react';
 import BgmControl from './components/BgmControl.jsx';
 import Calendar from './components/Calendar.jsx';
@@ -18,6 +18,7 @@ import { updateAmbient } from './lib/ambient.js';
 import { tr, useLang } from './lib/i18n.js';
 import Guide from './components/Guide.jsx';
 import Meteors from './components/Meteors.jsx';
+import TrainArrive from './components/TrainArrive.jsx';
 import { installMagnet } from './lib/magnet.js';
 import BondRecord from './components/BondRecord.jsx';
 import VelvetRoom from './components/VelvetRoom.jsx';
@@ -46,6 +47,9 @@ export default function App() {
   const [touring, setTouring] = useState(false);
   const [record, setRecord] = useState(false);
   const [photo, setPhoto] = useState(false);
+  const [train, setTrain] = useState(0);
+  const prevSection = useRef(route.section);
+  const endTrain = useCallback(() => setTrain(0), []);
   const lang = useLang();
   const touringRef = useRef(false);
 
@@ -178,10 +182,27 @@ export default function App() {
       finish();
       return;
     }
+    /* 首页 → 个人简介：列车进站的专属转场 */
+    if (prevSection.current === 'home' && route.section === 'about' && intro === 'done') {
+      /* 列车停在首页的海边；等镜头推到车门特写、画面被车门挡住时，再瞬间切到车厢，开门后露出来 */
+      setTrain((n) => n + 1);
+      sfx('train');
+      anim.current?.stop();
+      lastNav.current = Date.now() + 1200;
+      const id = window.setTimeout(() => {
+        ring.set(next);
+        finish();
+      }, 1300);
+      return () => window.clearTimeout(id);
+    }
     sfx('whoosh');
     anim.current = animate(ring, next, { type: 'spring', visualDuration: 1.1, bounce: 0.04, onComplete: finish });
     lastNav.current = Date.now();
-  }, [route.section, reduce, ring]);
+    return undefined;
+  }, [route.section, reduce, ring]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    prevSection.current = route.section;
+  }, [route.section]);
 
   /* 滚轮 / 触控板：正文还能滚动时让给正文，否则切换到相邻栏目 */
   useEffect(() => {
@@ -444,6 +465,7 @@ export default function App() {
         {record && <BondRecord onClose={() => setRecord(false)} />}
         {intro === 'done' && <Guide />}
         {intro === 'done' && <Meteors />}
+        {train > 0 && <TrainArrive key={train} onDone={endTrain} />}
         {photo && (
           <p className="photo-hint" aria-live="polite">
             {tr('拍照模式 · 点击任意处退出')}
