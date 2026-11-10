@@ -26,6 +26,8 @@ export const BOND_EVENTS = {
   'arcana:playground': '找到了星星',
   'arcana:contact': '找到了恋人',
   velvet: '推开了天鹅绒之门',
+  fusion: '合成了新的守护灵',
+  wish: '对着流星许了愿',
 };
 export const ARCANA_IDS = ['home', 'about', 'projects', 'playground', 'contact'];
 const TOTAL = Object.keys(BOND_EVENTS).length;
@@ -54,6 +56,8 @@ export const BOND_HINTS = {
   'arcana:playground': '站台的台子上放着什么',
   'arcana:contact': '天台栏杆边好像夹着东西',
   velvet: '集齐五张牌之后，去海边找一扇门',
+  fusion: '在天鹅绒房间里，把两张牌叠在一起',
+  wish: '没有月亮的夜里，抬头看看天',
 };
 export const MAX_RANK = 10;
 
@@ -144,4 +148,36 @@ export function notice(text) {
 export function onNotice(fn) {
   noticeListeners.add(fn);
   return () => noticeListeners.delete(fn);
+}
+
+/* 合成配方：记录访客试过哪几种两两组合（共十种） */
+const FUSION_KEY = 'tiaotiao.fusion.v1';
+export const FUSION_TOTAL = 10;
+export function fusionPairs() {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(FUSION_KEY) || '[]');
+    return Array.isArray(raw) ? raw.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+export function addFusionPair(a, b) {
+  const key = [a, b].sort().join('+');
+  const list = fusionPairs();
+  if (!list.includes(key)) {
+    list.push(key);
+    try {
+      window.localStorage.setItem(FUSION_KEY, JSON.stringify(list));
+    } catch {
+      /* ignore */
+    }
+  }
+  return list.length;
+}
+export function resetFusion() {
+  try {
+    window.localStorage.removeItem(FUSION_KEY);
+  } catch {
+    /* ignore */
+  }
 }

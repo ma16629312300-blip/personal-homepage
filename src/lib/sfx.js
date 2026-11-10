@@ -101,6 +101,14 @@ const SOUNDS = {
     noise(a, { dur: 1.6, from: 200, to: 3200, q: 0.7, gain: 0.05, delay: 0.2 });
     tone(a, { type: 'sine', from: 330, to: 660, dur: 1.4, gain: 0.03, delay: 0.5 });
   },
+  /* 合成：上升的嗡鸣、一记钟响、散开的亮音 */
+  fusion(a) {
+    tone(a, { type: 'sawtooth', from: 80, to: 320, dur: 1.5, gain: 0.03 });
+    noise(a, { dur: 1.5, from: 300, to: 5000, q: 0.8, gain: 0.04 });
+    tone(a, { type: 'sine', from: 523, dur: 1.6, gain: 0.07, delay: 1.5 });
+    tone(a, { type: 'sine', from: 1047, dur: 1.2, gain: 0.04, delay: 1.5 });
+    [1319, 1568, 2093].forEach((f, i) => tone(a, { type: 'triangle', from: f, dur: 0.5, gain: 0.03, delay: 1.7 + i * 0.12 }));
+  },
   /* 影时间：一记钟响后接持续的低鸣 */
   darkHour(a) {
     tone(a, { type: 'sine', from: 196, to: 194, dur: 2.4, gain: 0.08 });

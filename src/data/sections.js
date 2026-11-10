@@ -179,3 +179,14 @@ export const bgmTracks = {
   dusk: null,
   darkHour: null,
 };
+
+/* 原创守护灵：五张隐藏塔罗各对应一位；任意两位合成得到"零时钟匠" */
+export const guardians = {
+  home: { name: '潮汐看守', en: 'TIDE KEEPER', skill: ['Moonlit Tide', '月潮回涌'], arcana: ['0', 'THE FOOL', '愚者'], src: asset('guardian-home') },
+  about: { name: '末班车掌', en: 'LAST TRAIN CONDUCTOR', skill: ['Last Call', '终点广播'], arcana: ['IX', 'THE HERMIT', '隐者'], src: asset('guardian-about') },
+  projects: { name: '樱坡骑手', en: 'SAKURA HILL RIDER', skill: ['Petal Charge', '樱吹雪冲锋'], arcana: ['VII', 'THE CHARIOT', '战车'], src: asset('guardian-projects') },
+  playground: { name: '星屑织者', en: 'STARDUST WEAVER', skill: ['Star Loom', '星辰织机'], arcana: ['XVII', 'THE STAR', '星星'], src: asset('guardian-playground') },
+  contact: { name: '天台信使', en: 'ROOFTOP MESSENGER', skill: ['Sealed Letter', '封缄之信'], arcana: ['VI', 'THE LOVERS', '恋人'], src: asset('guardian-contact') },
+  world: { name: '零时钟匠', en: 'MIDNIGHT CLOCKMAKER', skill: ['Midnight Hand', '零时之针'], arcana: ['XXI', 'THE WORLD', '世界'], src: asset('guardian-world') },
+};
+export const fusionCircle = asset('fusion-circle');

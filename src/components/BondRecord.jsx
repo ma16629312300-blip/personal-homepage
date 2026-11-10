@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { BOND_EVENTS, BOND_HINTS, BOND_TOTAL, MAX_RANK, resetBond, useBond } from '../lib/bond.js';
+import { BOND_EVENTS, BOND_HINTS, BOND_TOTAL, MAX_RANK, resetBond, resetFusion, useBond } from '../lib/bond.js';
 import { setDream } from '../lib/sky.js';
 import { sfx } from '../lib/sfx.js';
 import { setName } from '../lib/name.js';
@@ -30,6 +30,7 @@ export default function BondRecord({ onClose }) {
       return;
     }
     resetBond();
+    resetFusion();
     try {
       window.localStorage.removeItem('tiaotiao.daily.v1');
     } catch {

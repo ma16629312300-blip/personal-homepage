@@ -38,7 +38,22 @@ export function EvokeCrack() {
   );
 }
 
-export function SummonLabel() {
+export function SummonLabel({ guardian }) {
+  /* 影时间里召唤的仍是 HOROLOGIUM；平时召唤出当前页的守护灵 */
+  if (guardian) {
+    return (
+      <div className="summon-label" aria-hidden="true">
+        <span className="summon-label__kind">
+          {guardian.arcana[0]} · {guardian.arcana[1]}
+        </span>
+        <strong className="summon-label__name">{guardian.en}</strong>
+        <span className="summon-label__zh">{tr(guardian.name)}</span>
+        <span className="summon-label__skill">
+          <b>{guardian.skill[0]}</b> {tr(guardian.skill[1])}
+        </span>
+      </div>
+    );
+  }
   return (
     <div className="summon-label" aria-hidden="true">
       <span className="summon-label__kind">PERSONA</span>
@@ -47,6 +62,16 @@ export function SummonLabel() {
       <span className="summon-label__skill">
         <b>Midnight Hand</b> {tr('零时之针')}
       </span>
+    </div>
+  );
+}
+
+/* 守护灵从画面右侧浮现，几秒后随召唤一起退场 */
+export function SummonGuardian({ guardian }) {
+  return (
+    <div className="summon-guardian" aria-hidden="true">
+      <span className="summon-guardian__ring" />
+      <img src={guardian.src} alt="" decoding="async" draggable="false" />
     </div>
   );
 }

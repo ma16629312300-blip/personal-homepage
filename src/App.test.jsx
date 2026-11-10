@@ -204,10 +204,11 @@ describe('tiaotiao 个人空间', () => {
     expect(within(rec).getByText('和我一起听首歌')).toBeInTheDocument();
   });
 
-  it('键入 persona 会召唤人格面具', () => {
+  it('键入 persona 会召唤当前页的守护灵', () => {
     render(<App />);
     'persona'.split('').forEach((key) => fireEvent.keyDown(window, { key }));
-    expect(screen.getByText('已召唤人格面具 HOROLOGIUM')).toBeInTheDocument();
+    expect(screen.getByText('已召唤守护灵 潮汐看守')).toBeInTheDocument();
+    expect(document.querySelector('.summon-label__name').textContent).toBe('TIDE KEEPER');
   });
 
   it('按 H 进入拍照模式，再按一次退出', () => {
@@ -217,5 +218,24 @@ describe('tiaotiao 个人空间', () => {
     expect(app.dataset.photo).toBe('true');
     fireEvent.keyDown(window, { key: 'h' });
     expect(app.dataset.photo).toBe('false');
+  });
+
+  it('天鹅绒房间里两张牌可以合成出零时钟匠，并多出一张世界牌', async () => {
+    render(<App />);
+    await act(async () => {
+      ARCANA_IDS.forEach((id) => bond(`arcana:${id}`));
+    });
+    await go('#velvet');
+    const room = screen.getByRole('dialog', { name: /天鹅绒房间/ });
+    fireEvent.click(within(room).getByRole('button', { name: '合成守护灵' }));
+    const start = within(room).getByRole('button', { name: '开始合成' });
+    expect(start).toBeDisabled();
+    fireEvent.click(within(room).getByRole('button', { name: /THE FOOL/ }));
+    fireEvent.click(within(room).getByRole('button', { name: /THE STAR/ }));
+    expect(start).not.toBeDisabled();
+    fireEvent.click(start);
+    expect((await within(room).findAllByText(/零时钟匠/)).length).toBeGreaterThan(0);
+    expect(within(room).getByRole('button', { name: /THE WORLD/ })).toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem('tiaotiao.fusion.v1'))).toEqual(['home+playground']);
   });
 });

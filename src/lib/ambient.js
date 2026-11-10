@@ -5,10 +5,13 @@ let nodes = null;
 let clack = 0;
 let want = { on: false, rain: false, train: false, dark: false };
 
+let cached = null;
 function noiseBuffer(a) {
+  if (cached) return cached;
   const buf = a.createBuffer(1, a.sampleRate * 2, a.sampleRate);
   const d = buf.getChannelData(0);
   for (let i = 0; i < d.length; i += 1) d[i] = Math.random() * 2 - 1;
+  cached = buf;
   return buf;
 }
 

@@ -77,13 +77,13 @@ export default function Ripples({ enabled, rain = false }) {
         if (document.hidden) return;
         const rect = el.getBoundingClientRect();
         if (!rect.height) return;
-        for (let i = 0; i < 2; i += 1) {
+        for (let i = 0; i < (fine ? 2 : 1); i += 1) {
           const y = rect.height * Math.random() * 0.9;
           ripples.push({ x: Math.random() * rect.width, y, t: performance.now(), depth: 0.08 + (y / rect.height) * 0.25 });
         }
         while (ripples.length > 40) ripples.shift();
         if (!raf) raf = requestAnimationFrame(frame);
-      }, 90);
+      }, fine ? 90 : 200);
     }
 
     if (fine) window.addEventListener('pointermove', onMove, { passive: true });
